@@ -1,0 +1,62 @@
+      SUBROUTINE  ZSCAL (N,ZA,ZX,INCX)
+C
+C    SCALES A VECTOR BY A CONSTANT.
+C    JACK DONGARRA, 3/11/78.
+C
+      COMPLEX*16 ZA,ZX(1)
+      IF(N.LE.0)RETURN
+      IF(INCX.EQ.1)GO TO 20
+C
+C        CODE FOR INCREMENTS NOT EQUAL TO 1
+C
+      IX = 1
+      IF(INCX.LT.0)IX = (-N+1)*INCX + 1
+      DO 10 I = 1,N
+        ZX(IX) = ZA*ZX(IX)
+        IX = IX + INCX
+   10 CONTINUE
+      RETURN
+C
+C        CODE FOR INCREMENTS EQUAL TO 1
+C
+   20 DO 30 I = 1,N
+        ZX(I) = ZA*ZX(I)
+   30 CONTINUE
+      RETURN
+      END
+
+      SUBROUTINE  ZSWAP (N,ZX,INCX,ZY,INCY)
+C
+C     INTERCHANGES TWO VECTORS.
+C     JACK DONGARRA, 3/11/78.
+C
+      COMPLEX*16 ZX(1),ZY(1),ZTEMP
+C
+      IF(N.LE.0)RETURN
+      IF(INCX.EQ.1.AND.INCY.EQ.1)GO TO 20
+C
+C       CODE FOR UNEQUAL INCREMENTS OR EQUAL INCREMENTS NOT EQUAL
+C         TO 1
+C
+      IX = 1
+      IY = 1
+      IF(INCX.LT.0)IX = (-N+1)*INCX + 1
+      IF(INCY.LT.0)IY = (-N+1)*INCY + 1
+      DO 10 I = 1,N
+        ZTEMP = ZX(IX)
+        ZX(IX) = ZY(IY)
+        ZY(IY) = ZTEMP
+        IX = IX + INCX
+        IY = IY + INCY
+   10 CONTINUE
+      RETURN
+C
+C       CODE FOR BOTH INCREMENTS EQUAL TO 1
+   20 DO 30 I = 1,N
+        ZTEMP = ZX(I)
+        ZX(I) = ZY(I)
+        ZY(I) = ZTEMP
+   30 CONTINUE
+      RETURN
+      END
+

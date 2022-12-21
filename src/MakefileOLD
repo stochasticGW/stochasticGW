@@ -1,0 +1,41 @@
+## compiler options
+FCMPI = mpifort -acc=gpu -fast -Minfo=accel #-Mpreprocess -DUSE_GPU=1
+MPIFLG = -DMPI -O3
+
+# Libraries
+FFTFLG = -L/usr/bin/fftw-3.3.9/lib -lfftw3
+LIBXC = -I/usr/bin/LIBXC/include -L/usr/bin/LIBXC/lib -lxcf03 -lxc
+
+# GPU libraries
+CUFLG = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/cuda/lib64 -lcudart -lcuda
+CULIB = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/math_libs/lib64 -lcufft -lcublas
+
+# compile
+all :  clean sgw clnomod 
+
+sgw: simmpi gwm atoms kbtop ppm kbmod
+	$(FCMPI) $(MPIFLG)  -o sgw.x kb/*f90 libgw/*f libgw/*f90 *f90 XCI/*.f90 $(LIBXC) $(FFTFLG) $(CUFLG) $(CULIB)
+
+simmpi:
+	$(FCMPI) $(MPIFLG) -c ./libgw/0_library_mpi_module.f90 ./libgw/0_simple_mpi.f90
+
+gwm:
+	$(FCMPI) $(MPIFLG) -c 1_gwm.f90
+
+atoms:
+	$(FCMPI) $(MPIFLG) -c 2_atoms.f90
+
+kbtop:
+	$(FCMPI) $(MPIFLG) -c 2_kb_top_module.f90
+
+ppm:
+	$(FCMPI) $(MPIFLG) -c 3_ppm.f90
+
+kbmod:
+	$(FCMPI) $(MPIFLG) -c kb/1_kb_mod.f90
+
+clnomod:
+	rm -rf *o *mod kb/*o libgw/*o 
+
+clean:
+	rm -rf *o *mod kb/*o libgw/*o sgw.x 
