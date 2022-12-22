@@ -50,20 +50,26 @@ subroutine vxc_spn_choose(dens, n, nspin, vxc)
   integer n, nspin
   real*8 dens(n, nspin), vxc(n,nspin)
 
+! Exchange: call LIBXC (general case) or use built-in PW-LDA
+#if LIBXC_ENABLED
   call vxc_libxc(dens, vxc, n, nspin)
-!  select case(functional)
-!  case('pwlda','lda')
-!     call vxc_spn_pwlda(dens, vxc, n, nspin)
-!  case('pbe')
-!     call check(nspin,1,' nspin-one for pbe ')
-!     call vxc_pbe_new(dens, vxc, n, nspin) 
-  !case (number)
-  !call libxc with the code
-!  case default
-!     write(6,*)' ERROR, functional should be pwlda (or lda) or pbe, not  ',functional
-!     stop
-!  end select
+#else
+  call vxc_spn_pwlda(dens, vxc, n, nspin)
+#endif
+
 end subroutine vxc_spn_choose
+
+subroutine vxc_libxc(dens, vxc, n, nspin) ! erase
+  implicit none
+  integer n, nspin, st
+  real*8  dens(n), vxc(n)
+  real*8, allocatable :: exc_pbe(:)
+  allocate(exc_pbe(n), stat=st); call check0(st,' exc_pbe ')
+#if LIBXC_ENABLED
+  call call_libxc(dens, n, nspin, vxc, exc_pbe)
+#endif
+  deallocate(exc_pbe)
+end subroutine vxc_libxc
 
 subroutine vxc_spn_pwlda(dens, vxc, n, nsp)  ! include core_correction
   use gwm, only : dv

@@ -458,6 +458,16 @@ subroutine read_input_vars !(inputfname).
      if(usegpu) stop ' build not compiled for GPU'
 #endif
 
+#if LIBXC_ENABLED
+#else
+     if (funct_x .ne. 1 .or. funct_c.ne. 12) then
+        write(*,'(X,2(A,I0,X,I0),A)') 'Functional = (',funct_x,funct_c,&
+                ') but LIBXC is not enabled, so only (',1,12,&
+                ') (PW-LDA + Slater exch.) is allowed!'
+        stop ' wrong functional'
+     endif
+#endif
+
 !     call lower_the_case(functional)
 !     select case(functional)
 !     case('lda','pwlda','pbe'); continue

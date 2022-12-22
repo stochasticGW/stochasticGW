@@ -36,7 +36,7 @@ module device_mem_module
   logical :: filter_setup=.FALSE.
   logical :: propdtpt_setup=.FALSE.
   logical :: vomake_setup=.FALSE.
-  logical :: makecudagraph=.TRUE.
+  logical :: makecudagraph=.FALSE.
 
 contains
 

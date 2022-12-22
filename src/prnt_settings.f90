@@ -27,7 +27,11 @@ subroutine prnt_settings
   case(1)
      axc=" read from vxc.txt"
   case(2)
+#if LIBXC_ENABLED
+     write(axc,'(X,A,2(X,I0),A)') ' (LIBXC#',funct_x,funct_c,')'
+#else
      axc=" LDA (PW91) "
+#endif
   case default
      stop " xc_type at present should be 1 or 2 "
   end select
@@ -40,10 +44,10 @@ subroutine prnt_settings
      write(6,*) " work_dir:       = ",trim(work_dir)
      write(6,*) " scratch_dir     = ",trim(scratch_dir)
      write(6,*) " centers units   = ",trim(units_nuc)
-     if(flgdyn) then
-     write(6,*) " flgdyn          =",flgdyn,' i.e., W-TDDFT '
+     if (flgdyn) then
+        write(6,*) " flgdyn          =",flgdyn,' i.e., W-TDDFT '
      else
-     write(6,*) " flgdyn          =",flgdyn,' i.e., W-RPA   '
+        write(6,*) " flgdyn          =",flgdyn,' i.e., W-RPA   '
      endif
      write(6,*) " det_tddft       =",det_tddft
      write(6,*) " binary inp.     =",binwf
@@ -56,7 +60,7 @@ subroutine prnt_settings
      write(6,*) " ntddft*nsp      =",ns_blk
      write(6,*) " orb_indx        =",orb_indx
      write(6,*) " PP:nrppmx       =",nrppmx
-     write(6,*) " xc_type         =",xc_type,' i.e., ',axc
+     write(6,*) " xc_type         =",xc_type,axc
      write(6,*) " projection      =",.not.filter_cheby
      if (filter_cheby) then
         write(6,*) " gapped-filtering=",gapped_flg
