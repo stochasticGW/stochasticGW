@@ -1,3 +1,7 @@
+#######################################################################
+##### Edit this section as appropriate for your build environment #####
+#######################################################################
+
 ### Compiler options
 FCMPI = mpifort
 MPIFLG = -DMPI -O3
@@ -5,7 +9,7 @@ PREPROCFLG = -Mpreprocess
 
 ### Preprocessor options
 USEGPU = yes
-USELIBXC = yes
+USELIBXC = no
 
 ### Paths to libraries
 
@@ -13,14 +17,13 @@ USELIBXC = yes
 FFT_PATH = -L/usr/bin/fftw-3.3.9/lib -lfftw3
 
 # LIBXC (optional, required to use functionals other than PW-LDA)
-LIBXC_PATH = -I/home/filip/Documents/LBL/libxc/nv-5.2.2/include -L/home/filip/Documents/LBL/libxc/nv-5.2.2/lib -lxcf03 -lxc
-#LIBXC_LIB = -I/usr/bin/LIBXC/include -L/usr/bin/LIBXC/lib -lxcf03 -lxc
+LIBXC_PATH =
 
 # GPU libraries (required for GPU execution)
 CUFLG = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/cuda/lib64 -lcudart
 CULIB = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/math_libs/lib64 -lcufft -lcublas
 
-LIBS = $(FFT_PATH)
+#######################################################################
 
 # Process flags
 LIBS = $(FFT_PATH)

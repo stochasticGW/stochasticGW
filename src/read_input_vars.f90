@@ -468,14 +468,6 @@ subroutine read_input_vars !(inputfname).
      endif
 #endif
 
-!     call lower_the_case(functional)
-!     select case(functional)
-!     case('lda','pwlda','pbe'); continue
-!     case default
-!        write(6,*)' error: functional should be lda (or pwlda, the same), or pbe ; '
-!        write(6,*)' but: functional = ',functional
-!        stop
-!     end select
  end if rnk0
  call bcast_variables
  call bcast_jidx(jidx)
@@ -553,7 +545,6 @@ subroutine bcast_variables
   call bcast_scalar_L(rdexch)
   call bcast_scalar_L(stoch_x)
   
-!  call bcast_functional
 contains
   subroutine bcast_method_exch ! overly complicated? maybe call bcast_char30(method_exch,0) ?
     implicit none
@@ -572,23 +563,6 @@ contains
     call bcast_char30(char30, 0)
     method_exch=char30
   end subroutine bcast_method_exch
-
-!  subroutine bcast_functional
-!    use simple_mpi, only : bcast_char30
-!    implicit none
-!    integer i
-!    character(30) func30
-!
-!    if(rank==0) then
-!       i=len_trim(functional)
-!       if(i>30) stop ' funcitonal length too long '
-!       write(6,*)' functional names length=',i
-!       func30=functional(1:i)
-!    endif
-!
-!    call bcast_char30(func30, 0)
-!    functional=func30
-!  end subroutine bcast_functional
 
 end subroutine bcast_variables
 
