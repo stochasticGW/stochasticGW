@@ -1,0 +1,8 @@
+output   h2o.out
+prefix   h2o
+qe_bin   
+wf_bin   F
+output   unified
+nocc     4
+orb      1 2 3 4 5 6 7 8
+
