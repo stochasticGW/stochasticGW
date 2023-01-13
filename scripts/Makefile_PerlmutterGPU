@@ -25,7 +25,7 @@ USELIBXC = yes
 FFT_PATH = -L ${FFTW_DIR} -lfftw3
 
 # LIBXC (optional, required to use functionals other than PW-LDA)
-LIBXC_PATH = -I/global/homes/p/pthomas/libxc-stable/v5.2.2/nvfortran-pm/include -L/global/homes/p/pthomas/libxc-stable/v5.2.2/nvfortran-pm/lib -lxcf03 -lxc
+LIBXC_PATH = -I/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/include -L/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/lib -lxcf03 -lxc
 
 # GPU libraries (required for GPU execution)
 #CUFLG = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/cuda/lib64 -lcudart
