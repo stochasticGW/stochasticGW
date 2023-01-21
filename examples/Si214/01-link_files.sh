@@ -25,7 +25,7 @@ ln -sf ../../common/counter.inp .
 # Pseudopotential directory
 ln -sf ../../../PP
 # sGW executable
-ln -sf ../../../src/sgw.x .
+ln -sf ../../../src/sgw_gpu.x .
 # Utility script for plotting filter coefficients, reconstructed filter
 ln -sf ../../../utils/vis-filter/plotfilter.py .
 cd ..
