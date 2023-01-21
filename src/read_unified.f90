@@ -101,9 +101,9 @@ contains
 !       Section tags: to add new sections, put tags here and increase
 !       size of tagsections array above.
         tagsections=(/&
-                     '$GEOMETRY',&
-                     '$GRID',&
-                     '$ORBITALS'&
+                     '$GEOMETRY       ',&
+                     '$GRID           ',&
+                     '$ORBITALS       '&
                      /)
         nsections=SIZE(tagsections)
         allocate(inpsections(nsections,2),taglengths(nsections))

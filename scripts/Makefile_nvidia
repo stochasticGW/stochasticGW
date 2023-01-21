@@ -2,36 +2,30 @@
 ##### Edit this section as appropriate for your build environment #####
 #######################################################################
 #
-# On NERSC Perlmutter, execute: 
-# $> module swap PrgEnv-gnu PrgEnv-nvidia && module load cray-fftw
-# (modules 'nvidia' and 'gpu' should be loaded by default)
-# then build with
-# $> make
+# Options/flags are set for NVIDIA Fortran compiler; some modification
+# needed to run with other compilers
 #
 ### Compiler options
-#FCMPI = mpifort
-FCMPI = ftn
+FCMPI = mpifort
 MPIFLG = -DMPI -O3
 PREPROCFLG = -Mpreprocess
 
 ### Preprocessor options
 USEGPU = yes
-USELIBXC = yes
+USELIBXC = no
 
 ### Paths to libraries
 
 # FFTW (required)
-#FFT_PATH = -L/usr/bin/fftw-3.3.9/lib -lfftw3
 FFT_PATH = -L ${FFTW_DIR} -lfftw3
 
 # LIBXC (optional, required to use functionals other than PW-LDA)
-LIBXC_PATH = -I/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/include -L/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/lib -lxcf03 -lxc
+LIBXC_PATH = 
 
 # GPU libraries (required for GPU execution)
-#CUFLG = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/cuda/lib64 -lcudart
-#CULIB = -L/opt/nvidia/hpc_sdk/Linux_x86_64/21.7/math_libs/lib64 -lcufft -lcublas
 CUFLG = -lcudart
 CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
+
 
 #######################################################################
 

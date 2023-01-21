@@ -25,5 +25,5 @@ module load cray-fftw
 
 export SLURM_CPU_BIND="cores"
 
-srun sgw.x
+srun sgw_gpu.x
 

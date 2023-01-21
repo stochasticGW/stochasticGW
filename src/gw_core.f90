@@ -43,18 +43,7 @@ subroutine gw_core
   allocate(eta(n),  stat=st); call check0(st,' eta ')
   allocate(pt(n,ns),stat=st); call check0(st,' pt  ')
 
-!!! TEST
-  if (rank==0) then
-     call cpu_time(t0)
-  endif
-!!! END TEST
   call pt_eta
-!!! TEST
-  if (rank==0) then
-     call cpu_time(t1)
-     write(*,'(2X,A,f16.3,X,A)') 'dTime for filtering   (rank 0): ',real(t1-t0),'s'
-  endif
-!!! END TEST
   call write_pt
 
   !
@@ -83,11 +72,6 @@ subroutine gw_core
   !
   ! now propagation
   !
-!!! TEST
-  if (rank==0) then
-     call cpu_time(t0)
-  endif
-!!! END TEST
 #if GPU_ENABLED
   if (.not.usegpu) then
      call vo_make ! CPU version
@@ -123,12 +107,6 @@ subroutine gw_core
   call make_ct
 #endif
   deallocate(vo)
-!!! TEST
-  if (rank==0) then
-     call cpu_time(t1)
-     write(*,'(2X,A,f16.3,X,A)') 'dTime for propagation (rank 0): ',real(t1-t0),'s'
-  endif
-!!! END TEST
 
   if(gamflg.eq.1.or.gamflg.eq.2) then ! no need in direct
     call color_reduce_sum_c16(ct, size(ct), ptheader_rank)
