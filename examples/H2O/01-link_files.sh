@@ -17,8 +17,9 @@ cd ..
 
 ## Link files in the sGW run directory
 cd 2-sgw
-# QE processed output containing geometry, grid, orbitals, and density
-ln -sf ../1-scf/sgwinp.txt .
+# QE processed output: coordinates file and wavefunction
+ln -sf ../1-scf/cnt.ini .
+ln -sf ../1-scf/wf.txt .
 # sGW random seed file
 ln -sf ../../common/random.inp .
 # sGW counter input
@@ -26,7 +27,7 @@ ln -sf ../../common/counter.inp .
 # Pseudopotential directory
 ln -sf ../../../PP
 # sGW executable
-ln -sf ../../../src/sgw.x .
+ln -sf ../../../src/sgw_gpu.x .
 # Utility script for plotting filter coefficients, reconstructed filter
 ln -sf ../../../utils/vis-filter/plotfilter.py .
 cd ..

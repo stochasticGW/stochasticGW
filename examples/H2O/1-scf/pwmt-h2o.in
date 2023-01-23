@@ -11,7 +11,7 @@
     nat  = 3,
     ntyp = 2,
     nbnd = 8,
-    ecutwfc=80,
+    ecutwfc=38,
     assume_isolated='mt'
     exxdiv_treatment = 'gygi-baldereschi'
     x_gamma_extrapolation = .TRUE.
