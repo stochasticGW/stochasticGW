@@ -1,0 +1,8 @@
+output   silicon.out
+prefix   silicon
+qe_bin   
+wf_bin   F
+output   targeted
+nocc     16
+orb      
+
