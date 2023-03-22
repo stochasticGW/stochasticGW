@@ -40,7 +40,7 @@ subroutine exchange_stoch
               call cvh_sub_exch(crho,cpot,n)
 
               c1 = dv*sum(conjg(crho*cpot))*normpt(is)**2
-!              call check_real_1(c1,' excej ') !!! PTMOD removed for testing
+              call check_real_1(c1,' excej ') !!! PT: comment out to test nj>0 code
 
               excej(ie,ij) = excej(ie,ij) - c1/dble(ns_blk)
            enddo ijloop

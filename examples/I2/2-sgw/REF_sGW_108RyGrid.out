@@ -1,0 +1,169 @@
+  ************************************************************** 
+ 
+  Stochastic GW, v3.0 (Oct/2022) 
+ 
+  ************************************************************** 
+ 
+  Program uses:             1  cores 
+  icounter =                0
+  scratch_path=
+ .                                                                                                   
+  scratch_dir=
+ ./GW_SCRATCH.0                                                                                      
+  Details on the results are in : GW_WORK.0/details_output.txt
+  
+  Input file "sgwinp.txt" detected: reading 
+  grids, orbitals, density, and atomic coordinates...
+ 
+  ########## Grid parameters as read from sgwinp.txt  ########## 
+ 
+  nx                           72
+  ny                           72
+  nz                           72
+  n                        373248
+  dx                   0.27777800
+  dy                   0.27777800
+  dz                   0.27777800
+  dv                   0.02143352
+  nsp                           1
+  homo energy         -0.22845216 
+  lumo energy         -0.14346200 
+ 
+  ############ READING DFT ORBITALS FROM sgwinp.txt ############
+ 
+  ORBI(7) read: spin = 1; energy =      -0.22845216; norm =       1.00000000
+  ORBJ(1) read: spin = 1; energy =      -0.71934225; norm =       1.00000000
+  ORBJ(2) read: spin = 1; energy =      -0.61222533; norm =       1.00000000
+  ORBJ(3) read: spin = 1; energy =      -0.36466720; norm =       1.00000000
+  ORBJ(4) read: spin = 1; energy =      -0.30309003; norm =       1.00000000
+  ORBJ(5) read: spin = 1; energy =      -0.30309003; norm =       1.00000000
+  ORBJ(6) read: spin = 1; energy =      -0.22845216; norm =       1.00000000
+  ORBJ(7) read: spin = 1; energy =      -0.22845216; norm =       1.00000000
+  ORBJ(8) read: spin = 1; energy =      -0.14346200; norm =       1.00000000
+  ORBJ(9) read: spin = 1; energy =      -0.02285808; norm =       1.00000000
+  ORBJ(10) read: spin = 1; energy =       0.02514021; norm =       1.00000000
+  ORBJ(11) read: spin = 1; energy =       0.02951338; norm =       1.00000000
+  ORBJ(12) read: spin = 1; energy =       0.03215566; norm =       1.00000000
+  ORBJ(13) read: spin = 1; energy =       0.03215566; norm =       1.00000000
+  ORBJ(14) read: spin = 1; energy =       0.03514338; norm =       1.00000000
+  DENS read: Nr. electrons == integral(dens*d3r)=     13.99999999999984     
+ 
+  Positions in bohr, read from: sgwinp.txt 
+  Number of atoms   :             2
+  Number of elements:             1
+ 
+  ############ NOW READING RANDOM SEED (KISS ALGORITHM) ############ 
+ 
+   Using 2 files: 
+   (I)  counter.inp, with 1 small integer (run counter) modifying seeds 
+          run counter =            0
+ 
+   (II) random.inp,  with              6  lines 
+          format: line_s,  seed(1:4)          
+            1      1328292723921723482       465843787610976291 
+         1238272155852012       285837261819111683
+            2      3445678193538273923       428101811812099199 
+         3338291112838288       233457899181011188
+            3      2232345667998282721       233448848321118821 
+         2213897875588299       339222817193322919
+            4      1292837426446364573       320382827374565487 
+         3823347573727627       238475732726262611
+            5      3363583475683236724       272234274865828822 
+         2438274743767322       444567624677123262
+            6      2236563722622622364       222822828282737372 
+         4432211143786839       332274728281811811
+  
+  ############ READING PSEUDOPOTENTIAL FILES ############
+ 
+  Reading pseudopotential file: I.pw-mt_fhi.UPF
+  Finished reading PP 
+ 
+  WARNING: potential problem in pseudopotential: <phi_L|phi_L> isnt 1:
+  -> atom-charge 53 and L = 2: <phi_L|phi_L> =     1.063383
+ 
+  WARNING: potential problem in pseudopotential: <phi_L|phi_L> isnt 1:
+  -> atom-charge 53 and L = 3: <phi_L|phi_L> =     1.064745
+ 
+  Finished checking PP 
+  Total charge:     14.00000    
+ 
+  ############# ECHO OF INPUT VARIABLES #############
+  MC (total)            =            1
+  # MC_STEP (each core) =            1
+  multiplicity (=nsp)   =            1
+  work_dir:       = GW_WORK.0
+  scratch_dir     = ./GW_SCRATCH.0
+  centers units   = bohr
+  flgdyn          =  F  i.e., W-RPA   
+  det_tddft       =  F
+  binary inp.     =  F
+  periodic        =  F
+  usegpu          =  T
+  block_gam_alg   =  F
+  scale_vh        =            1
+  N_cores (mpi)   =            1
+  buffer_size     =            1
+  ntddft*nsp      =            1
+  orb_indx        =            7
+  PP:nrppmx       =         1200
+  xc_type         =            2   (LIBXC# 1 12)                         
+  projection      =  F
+  gapped-filtering=  T
+  homo            =  -0.2284521600101143       (read from "sgwinp.txt")
+  lumo            =  -0.1434620030961931       (read from "sgwinp.txt")
+  ekcut           =    18.00000
+  dt              =     0.05000
+  gamma           =     2.40000
+  sm              =     0.00010
+  charge_net      =     0.00000
+  nxi             =     10000
+  segment_fraction=     0.00300
+ 
+  ############ DETERMINED VARIABLES ############ 
+  tmax         =    1.250000    
+  nw           =          256
+  dw           =   0.4908738    
+ 
+  recalculated net charge (from density):    1.6875390E-13
+ 
+ 
+  NOTE: memory requirements per core due to psi -- in GB    2.0800000E-03
+ 
+  segment width          1120
+ 
+  <phi|H|phi> computed from orbital from file:   -0.2284139    
+                      vs. eorb read from file:   -0.2284522    
+ 
+  KS energy computed for orbital 1 (<phi|H|phi>): -0.7177482E+00
+  KS energy computed for orbital 2 (<phi|H|phi>): -0.6103286E+00
+  KS energy computed for orbital 3 (<phi|H|phi>): -0.3644861E+00
+  KS energy computed for orbital 4 (<phi|H|phi>): -0.3030064E+00
+  KS energy computed for orbital 5 (<phi|H|phi>): -0.3030064E+00
+  KS energy computed for orbital 6 (<phi|H|phi>): -0.2284140E+00
+  KS energy computed for orbital 7 (<phi|H|phi>): -0.2284139E+00
+  KS energy computed for orbital 8 (<phi|H|phi>): -0.1435388E+00
+  KS energy computed for orbital 9 (<phi|H|phi>): -0.2335798E-01
+  KS energy computed for orbital 10 (<phi|H|phi>):  0.2481369E-01
+  KS energy computed for orbital 11 (<phi|H|phi>):  0.2897871E-01
+  KS energy computed for orbital 12 (<phi|H|phi>):  0.3140844E-01
+  KS energy computed for orbital 13 (<phi|H|phi>):  0.3140842E-01
+  KS energy computed for orbital 14 (<phi|H|phi>):  0.3476484E-01
+ 
+  ############ HAMILTONIAN INFO: ############ 
+ 
+  hmin       =      -0.69876355
+  hmax       =      19.22646523
+  dh scaling =       1.04999995
+  dh         =      10.46074486
+  havg       =       9.26385021
+  nchbmx     =               16
+  scaled_gap =       0.00812468
+  -> Gapped-filtering will be used
+     to prepare the occupied stochastic states
+
+  Time:  preparation     9.868343    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=          1 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          1
+ 
+  problem in  excej  =   (-2.209316658484306,-0.5794512874310086)
