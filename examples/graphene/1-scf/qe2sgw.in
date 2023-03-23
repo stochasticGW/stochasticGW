@@ -1,0 +1,7 @@
+output   graphene.out
+prefix   graphene
+qe_bin   
+wf_bin   F
+output   full
+nocc     8
+orb      
