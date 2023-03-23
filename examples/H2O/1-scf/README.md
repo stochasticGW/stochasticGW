@@ -7,7 +7,7 @@ The results are then converted into StochasticGW format using the tool
 1. Examine `pwmt-h2o.in`. Note that we are computing 8 orbitals for the
    gamma k-point, which includes the 4 occupied orbitals plus 4 vacant
    orbitals. Run the SCF calculation using Quantum Espresso:
-   `pw.x -input pwmt-h2o >& h2o.out` (or, on NERSC Perlmutter, run using an
+   `pw.x -input pwmt-h2o >& h2o.out` (or, on an HPC cluster, run using an
    appropriate job script).
 
 2. Examine `qe2sgw.in`. The 'output' setting, 'full', means that two files

@@ -8,8 +8,8 @@ functionality to compute the matrix elements of the Sigma operator,
    orbital above, and the list of j-orbitals are provided in the entry
    'orbj_indx'.
 
-2. Run `./sgw.x` (or on NERSC-Perlmutter, `./sgw_gpu.x` using a job script
-   which targets the Perlmutter GPU partition). In the output, note that the
+2. Run `./sgw.x` (or, on an HPC cluster, call `sgw_gpu.x` using an appropriate
+   job script). In the output, note that the
    results for `<i|Sigma|i>` are printed followed by those for `<i|Sigma|j>`.
    Do the values of the matrix elements for `<i|Sigma|j>` for j=4 agree with
    those printed for `<i|Sigma|i>`?
