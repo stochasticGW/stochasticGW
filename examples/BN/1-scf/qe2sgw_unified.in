@@ -1,0 +1,8 @@
+output   bn.out
+prefix   bn
+qe_bin   
+wf_bin   F
+output   unified
+nocc     16
+orb      16 17 
+
