@@ -45,14 +45,19 @@ subroutine get_vxc_spn(dens, n, nsp, vxc)  ! include core_correction
 end subroutine get_vxc_spn
 
 subroutine vxc_spn_choose(dens, n, nspin, vxc)
-!  use gwm, only : functional 
+  use gwm, only : funct_x, funct_c
   implicit none
   integer n, nspin
   real*8 dens(n, nspin), vxc(n,nspin)
 
 ! Exchange: call LIBXC (general case) or use built-in PW-LDA
 #if LIBXC_ENABLED
-  call vxc_libxc(dens, vxc, n, nspin)
+  if (funct_x.eq.0 .and. funct_c.eq.0) then
+     ! Built-in PW-LDA for case with LIBXC linked
+     call vxc_spn_pwlda(dens, vxc, n, nspin)
+  else
+     call vxc_libxc(dens, vxc, n, nspin)
+  endif
 #else
   call vxc_spn_pwlda(dens, vxc, n, nspin)
 #endif

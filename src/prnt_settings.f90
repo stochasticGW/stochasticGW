@@ -28,7 +28,11 @@ subroutine prnt_settings
      axc=" read from vxc.txt"
   case(2)
 #if LIBXC_ENABLED
-     write(axc,'(X,A,2(X,I0),A)') ' (LIBXC#',funct_x,funct_c,')'
+     if (funct_x.eq.0 .and. funct_c.eq.0) then
+        axc=" LDA (PW91) "
+     else
+        write(axc,'(X,A,2(X,I0),A)') ' (LIBXC#',funct_x,funct_c,')'
+     endif
 #else
      axc=" LDA (PW91) "
 #endif

@@ -106,8 +106,8 @@ subroutine read_input_vars !(inputfname).
      binwf        = .false.
      dim_periodic = 0
      box          = 'pos'
-     funct_x      = 1
-     funct_c      = 12
+     funct_x      = 0
+     funct_c      = 0
 
      trace        = .false.
      eorb         = -999999d0
@@ -460,10 +460,11 @@ subroutine read_input_vars !(inputfname).
 
 #if LIBXC_ENABLED
 #else
-     if (funct_x .ne. 1 .or. funct_c.ne. 12) then
+     if (funct_x.ne.0 .or. funct_c.ne.0) then
         write(*,'(X,2(A,I0,X,I0),A)') 'Functional = (',funct_x,funct_c,&
-                ') but LIBXC is not enabled, so only (',1,12,&
+                ') but LIBXC is not enabled, so only (',0,0,&
                 ') (PW-LDA + Slater exch.) is allowed!'
+        write(*,'(X,A)') 'Note: (0,0) here corresponds to LIBXC = (1,12)'
         stop ' wrong functional'
      endif
 #endif
