@@ -1,0 +1,34 @@
+# Input charge-density file, in BerkeleyGW format. This is optional.
+#input_rho_file RHO
+
+# Output charge-density file, for StochasticGW calculations using stochastic
+# orbitals, in text format. Defaults to dens.txt. The output charge-density
+# file will only be written if [[input_rho_file]] is specified.
+output_rho_file dens.txt
+
+# Input wavefunction file, in BerkleyGW format. This is optional.
+#input_wfn_file WFN
+
+# Output wavefunction file, for StochasticGW calculations using deterministic
+# orbitals, in text or binary format. Defaults to wf.bin. The output wavefunction
+# file will only be written only if [[input_wfn_file]] is specified.
+output_wfn_file wf.bin
+
+# Output structure file for StochasticGW calculations, with atomic position in
+# bohrs. This file will only be written if [[input_wfn_file]] is specified.
+output_structure_file cnt.ini
+
+# Number of orbitals to write. Default (-1) is to write all orbitals in the
+# input file.
+number_states -1
+
+# Whether to write the text (formatted) output in high precision (16 digits,
+# ~double precision) or low precision (7 digits, ~single precision). Default is
+# low precision.
+#
+#
+#precision_high
+precision_low
+
+input_wfn_file WFN
+input_rho_file RHO
