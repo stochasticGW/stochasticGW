@@ -24,7 +24,7 @@
   PREPROCFLG = -Mpreprocess
   USEGPU = yes
   USELIBXC = no
-  FFT_PATH = -L ${FFTW_DIR} -lfftw3
+  FFTPATH = -L ${FFTW_DIR} -lfftw3
   CUFLG = -lcudart
   CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
 

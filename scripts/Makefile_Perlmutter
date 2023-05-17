@@ -24,7 +24,7 @@ MPIFLG = -DMPI -O3
 ### Paths to libraries
 
 # FFTW (required)
-FFT_PATH = -L ${FFTW_DIR} -lfftw3
+FFTPATH = -L ${FFTW_DIR} -lfftw3
 
 # GPU libraries (required for GPU execution)
 CUFLG = -lcudart
@@ -33,7 +33,7 @@ CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
 #######################################################################
 
 # Process flags
-LIBS = $(FFT_PATH)
+LIBS = $(FFTPATH)
 
 USEGPU := $(strip ${USEGPU})
 GPU_FILES=
