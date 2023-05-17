@@ -1,60 +1,46 @@
-# INSTALLING AND RUNNING StochasticGW (version 1).
+# INSTALLING AND RUNNING StochasticGW (version 3).
 
-# Say you have installed (tar -xzvf sgw-v1.0.tgz ) the stochasticGW code in your main direcotry.  
-# The code is then in ~/sgw-v1.0
-# Then write:
+# Once you have cloned the stochasticGW GitHub repository in your main directory,
+# the code is in ~/stochasticGW-GPU. Then navigate:
 
-     cd ~/sgw-v1.0
+     cd ~/stochasticGW-GPU
 
-# Go to the src
+# Go to the scripts/ directory
+
+    cd scripts
+
+# Copy a makefile that is appropriate for your architecture to the src directory, e.g.
+
+    cp Makefile_nvidia ../src/Makefile
+
+# Go to the src directory
     
-    cd src
+    cd ../src
 
-# Within src, change the compiler options in makefile to your liking. At present they are:
-  FCMPI   = mpif90        
+# Within src, change the compiler options in Makefile to your liking. At present they are:
+
+  FCMPI   = mpifort
   MPIFLG  = -DMPI -O3
-  FFTFLG  = -lfftw3
+  PREPROCFLG = -Mpreprocess
+  USEGPU = yes
+  USELIBXC = no
+  FFT_PATH = -L ${FFTW_DIR} -lfftw3
+  CUFLG = -lcudart
+  CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
 
-# exit makefile, and activate it
+# (note that setting 'USEGPU = yes' currently requires the NVIDIA compiler for building 
+# the OpenACC GPU code; setting 'USELIBXC = yes' requies a prior installation of LIBXC)
+
+# Exit Makefile, and compile the code:
   
     make
 
-# Make sure sgw.x has been created
+# Make sure that either 'sgw_gpu.x' or 'sgw_cpu.x' has been created:
   
-    ls -l sgw.x
+    ls sgw*.x
 
-# Now you are ready to implement the code. 
-# Then, say you want to run it in ~/mygwrun .  Go there, and copy
-#    the H2 example input, the executable, and pseudopotentials to the present directory.
-
-   mkdir ~/mygwrun
-   cd ~/mygwrun
-   cp ~/sgw-v1.0/examples/H2/* .
-   cp ~/sgw-v1.0/src/sgw.x  .
-   cp -r ~/sgw-v1.0/PP/ .
-
-# At this point, your mygwrun directory should contain the following:
-
-  cnt.ini  counter.inp  INPUT  log_h2example  PP random.inp  sgw.x   wf.txt 
-
-# where PP is a directory (with pseudpotentials).  
-# All these files are inputs except for log_h2example.
-
-# To run the H2 example (from the Tutorial) on, say, 30 cores, write
-
-  mpirun -n 30 ./sgw.x >& log &
-
-# The output of log should match that of log_h2example.  
-
-# After the H2 test is finished, you can do any run.  
-# Specifically:
-# 1) Change INPUT as needed -- especially make sure that you keep ntddft to be between 4 and 30
-#                             and change if deisred gamma from 0.06 to, say, 0.04
-#
-# 2) Change the nuclear coordinatres (cnt.ini) 
-#
-# 3) And bring your own wf.txt (or better yet, wf.bin ) file that contains the occupied
-#  dft energies and functions.  
-#
-# 4) And remember to include in PP any pseduopotential you need.
+# Now you are ready to execute the code!
+# For example, consider the H2 test case. From the main stochasticGW-GPU
+# directory, navigate to the example directory 'examples/H2 and follow the instructions
+# in the 'README.md' file.
 
