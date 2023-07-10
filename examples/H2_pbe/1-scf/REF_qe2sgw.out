@@ -1,0 +1,77 @@
+ outputfile   h2.out                                            
+ prefix       h2                                                
+ qe bin exe                                                     
+ flg_bin       F
+ nocc                    1
+ output       full
+ orb          
+
+     Program POST-PROC v.7.1 starts on 28Mar2023 at 16:36:31 
+
+     This program is part of the open-source Quantum ESPRESSO suite
+     for quantum simulation of materials; please cite
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 29 465901 (2017);
+         "P. Giannozzi et al., J. Chem. Phys. 152 154105 (2020);
+          URL http://www.quantum-espresso.org", 
+     in publications or presentations arising from this work. More details at
+     http://www.quantum-espresso.org/quote
+
+     Parallel version (MPI & OpenMP), running on       1 processor cores
+     Number of MPI processes:                 1
+     Threads/MPI process:                     1
+
+     MPI processes distributed on     1 nodes
+     460118 MiB available memory on the printing compute node when the environment starts
+
+
+     Reading xml data from directory:
+
+     ./h2.save/
+     file H.pw-mt_fhi.UPF: wavefunction(s)  2p 3d renormalized
+
+     IMPORTANT: XC functional enforced from input :
+     Exchange-correlation= PBE
+                           (   1   4   3   4   0   0   0)
+     Any further DFT definition will be discarded
+     Please, verify this is what you really want
+
+
+     G-vector sticks info
+     --------------------
+     sticks:   dense  smooth     PW     G-vecs:    dense   smooth      PW
+     Sum        2009    2009    497                67691    67691    8385
+
+     Using Slab Decomposition
+
+
+     Calling punch_plot, plot_num =   7
+
+     Plotting k_point =   1  band =  1
+     Writing data to file  tmp.pp_K001_B001
+
+     Calling punch_plot, plot_num =   7
+
+     Plotting k_point =   1  band =  2
+     Writing data to file  tmp.pp_K001_B002
+     Reading data from file  tmp.pp_K001_B001
+
+     Writing data to be plotted to file tmp.pp_K001_B001
+     Plot Type: 3D                     Output format: Gaussian cube
+     Reading data from file  tmp.pp_K001_B002
+
+     Writing data to be plotted to file tmp.pp_K001_B002
+     Plot Type: 3D                     Output format: Gaussian cube
+
+     POST-PROC    :      0.88s CPU      0.99s WALL
+
+
+   This run was terminated on:  16:36:32  28Mar2023            
+
+=------------------------------------------------------------------------------=
+   JOB DONE.
+=------------------------------------------------------------------------------=
+ tmp.pp_K001_B001                                  
+ norm of state           1 is   1.0000055269476149     
+ tmp.pp_K001_B002                                  
+ norm of state           2 is   1.0000023472126431     

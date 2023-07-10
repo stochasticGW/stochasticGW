@@ -1,0 +1,7 @@
+output   h2.out
+prefix   h2
+qe_bin   
+wf_bin   F
+output   full
+nocc     1
+orb      

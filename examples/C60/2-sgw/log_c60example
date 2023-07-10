@@ -1,0 +1,126 @@
+  ************************************************************** 
+ 
+  Stochastic Gw, v1.3 (Mar/2017) 
+ 
+  ************************************************************** 
+ 
+  Program uses:          840  cores 
+  icounter =               0
+  scratch_path=
+ .                                                                              
+                      
+  scratch_dir=
+ ./GW_SCRATCH.0                                                                 
+                      
+  Details on the Results are in : GW_WORK.0/details_ouput.txt
+ 
+  Positions in bohr, read from: cnt.ini 
+  Number of atoms :             60
+  Number of elements:            1
+ 
+  Reading pseudopotential file: 06-C.LDA.fhi
+  Finished reading PP 
+ 
+  WARNING: potential problem in pseduopotential: <phi_L|phi_L> isnt 1.
+  Specifcially: for atom-charge            6  and L            3  <phi_L|phi_L> 
+   1.098047    
+ 
+  Finished checking PP 
+  
+  Total charge:    240.0000    
+ 
+ 
+  ############# ECHO OF INPUT VARIABLES #############
+  MC (total)            =         840
+  # MC_STEP (each core) =           1
+  multiplicity (=nsp)   =           1
+  work_dir:       = GW_WORK.0
+  scratch_dir     = ./GW_SCRATCH.0
+  centers units   = bohr
+  flgdyn          = T  i.e., W-TDDFT 
+  det_tddft       = F
+  binary inp.     = T
+  periodic        = F
+  scale_vh        =           2
+  N_cores (mpi)   =         840
+  buffer_size     =           1
+  ntddft*nsp      =           8
+  orb_indx        =         121
+  PP:nrppmx       =        1200
+  xc_type         =           2  i.e.,  LDA (PW91)                             
+  ekcut           =    20.00000
+  dt              =     0.05000
+  gamma           =     0.06000
+  sm              =     0.00010
+  charge_net      =     0.00000
+  nxi             =     10000
+  segment_fraction=     0.00300
+ 
+  ############ DETERMINED VARIABLES ############ 
+  tmax         =   50.00000    
+  nw           =        8192
+  dw           =  1.5339808E-02
+ 
+  reading  from wf.bin  
+  ############## Grid parameters as read  from wf.bin   ############ 
+  nx                     80
+  ny                     80
+  nz                     80
+  n                  512000
+  dx               0.400000
+  dy               0.400000
+  dz               0.400000
+  dv               0.064000
+  reading  from wf.bin  
+ 
+  eorb = eigenvalue( state          121 ) =  -0.1642941    
+ 
+  ############ NOW READING RANDOM SEED (KISS ALGORITHM) ############ 
+ 
+   Using 2 files: 
+   (I)  counter.inp, with 1 small integer (run counter) modifying seeds 
+          run counter =           0
+ 
+   (II) random.inp,  with             6  lines 
+          format: line_s,  seed(1:4)          
+           1   1328292723921723482    465843787610976291      1238272155852012
+    285837261819111683
+           2   3445678193538273923    428101811812099199      3338291112838288
+    233457899181011188
+           3   2232345667998282721    233448848321118821      2213897875588299
+    339222817193322919
+           4   1292837426446364573    320382827374565487      3823347573727627
+    238475732726262611
+           5   3363583475683236724    272234274865828822      2438274743767322
+    444567624677123262
+           6   2236563722622622364    222822828282737372      4432211143786839
+    332274728281811811
+  
+ 
+  NOTE: memory requirements per core due to psi -- in GB   8.0080003E-02
+ 
+ 
+  segment width         1537
+ 
+  <phi|H|phi> from orbital in orb.txt is:  -0.1645689    
+                        vs. eorb as read:  -0.1642941    
+ 
+  Time:  preparation    8.873650    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        840 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          1
+ 
+ 
+                    -0.164569                          E                          
+                    -0.498348                          <V>                        
+           840      -0.361616       0.000000           MC, <X>         +-stat.err 
+           840      -0.068295       0.001864           MC, Sig_R(e_qp) +-stat.err 
+           840      -0.050505       0.001795           MC, Sig_R(e_ks) +-stat.err 
+           840      -0.003234       0.000292           MC, Sig_I(e_ks) +-stat.err 
+           840       0.782273                          MC, Z                      
+           840      -0.097116                          MC, Elin                   
+           840      -0.096131       0.001864           MC, E_qp        +-stat.err 
+           840      -0.010101       0.000743           MC, Ei_qp       +-stat.err 
+ 
+  Time:  MC_STEP:            1 => time:    2994.154    
+  Time:  program end    2994.163    

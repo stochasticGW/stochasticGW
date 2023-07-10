@@ -1,0 +1,8 @@
+output   h2o.out
+prefix   h2o
+qe_bin   
+wf_bin   F
+output   full
+nocc     4
+orb      
+

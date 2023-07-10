@@ -1,0 +1,43 @@
+&control
+   prefix = 'h2'
+   calculation = 'scf'
+   tstress = .true.
+   etot_conv_thr = 1d-5
+   forc_conv_thr = 1d-4
+/
+&system
+   ibrav = 0
+   nat = 2
+   ntyp = 1
+   ecutwfc = 28.0
+   ecutrho = 112.0
+   nbnd = 2
+   assume_isolated='mt'
+   input_dft='pbe'
+   nosym_evc = .true.
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-10
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+/
+
+CELL_PARAMETERS bohr
+15.0  0.0  0.0
+ 0.0 15.0  0.0
+ 0.0  0.0 15.0
+
+ATOMIC_SPECIES
+  H 1.00d0 H.pw-mt_fhi.UPF
+
+ATOMIC_POSITIONS (bohr)
+  H  6.8  7.5  7.5
+  H  8.2  7.5  7.5
+K_POINTS automatic
+1 1 1 0 0 0
+
