@@ -1,0 +1,43 @@
+&control
+   prefix = 'silicon'
+   calculation = 'scf'
+   tstress = .true.
+   etot_conv_thr = 1d-5
+   forc_conv_thr = 1d-4
+/
+&system
+   ibrav = 1
+   celldm(1) = 10.173697855629921
+   nat = 8
+   ntyp = 1
+   nbnd = 32
+   ecutwfc = 54.0
+   ecutrho = 108.0
+   nosym_evc = .true.
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+/
+&ions
+/
+ATOMIC_SPECIES
+  Si  28.086  Si.pw-mt_fhi.UPF
+ATOMIC_POSITIONS alat
+  Si  0.00  0.00  0.00
+  Si  0.00  0.50  0.50
+  Si  0.50  0.00  0.50
+  Si  0.50  0.50  0.00
+  Si  0.25  0.25  0.25
+  Si  0.75  0.75  0.25
+  Si  0.25  0.75  0.75
+  Si  0.75  0.25  0.75
+K_POINTS automatic
+1 1 1 0 0 0
+

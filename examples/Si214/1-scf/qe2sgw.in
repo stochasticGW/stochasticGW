@@ -1,0 +1,8 @@
+output   Si214_fhi_scf.out
+prefix   Si214_fhi
+qe_bin   
+wf_bin   F
+output   unified
+nocc     428
+orb      428 429
+

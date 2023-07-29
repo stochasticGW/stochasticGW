@@ -1,0 +1,46 @@
+# INSTALLING AND RUNNING StochasticGW (version 3).
+
+# Once you have cloned the stochasticGW GitHub repository in your main directory,
+# the code is in ~/stochasticGW-GPU. Then navigate:
+
+     cd ~/stochasticGW-GPU
+
+# Go to the scripts/ directory
+
+    cd scripts
+
+# Copy a makefile that is appropriate for your architecture to the src directory, e.g.
+
+    cp Makefile_nvidia ../src/Makefile
+
+# Go to the src directory
+    
+    cd ../src
+
+# Within src, change the compiler options in Makefile to your liking. At present they are:
+
+  FCMPI   = mpifort
+  MPIFLG  = -DMPI -O3
+  PREPROCFLG = -Mpreprocess
+  USEGPU = yes
+  USELIBXC = no
+  FFTPATH = -L ${FFTW_DIR} -lfftw3
+  CUFLG = -lcudart
+  CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
+
+# (note that setting 'USEGPU = yes' currently requires the NVIDIA compiler for building 
+# the OpenACC GPU code; setting 'USELIBXC = yes' requies a prior installation of LIBXC)
+
+# Exit Makefile, and compile the code:
+  
+    make
+
+# Make sure that either 'sgw_gpu.x' or 'sgw_cpu.x' has been created:
+  
+    ls sgw*.x
+
+# Now you are ready to execute the code!
+# For example, consider the H2 test case. From the main stochasticGW-GPU
+# directory, navigate to the example directory 'examples/H2 and follow the instructions
+# in the 'README.md' file.
+

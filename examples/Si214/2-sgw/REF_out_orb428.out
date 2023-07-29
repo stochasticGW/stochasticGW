@@ -1,0 +1,1146 @@
+Lmod has detected the following error: Swap failed: "PrgEnv-gnu" is not
+loaded.
+
+
+
+  ************************************************************** 
+ 
+  Stochastic GW, v3.0 (Oct/2022) 
+ 
+  ************************************************************** 
+ 
+  Program uses:             8  cores 
+  icounter =                0
+  scratch_path=
+ .                                                                                                   
+  scratch_dir=
+ ./GW_SCRATCH.0                                                                                      
+  Details on the results are in : GW_WORK.0/details_output.txt
+  
+  Input file "sgwinp.txt" detected: reading 
+  grids, orbitals, density, and atomic coordinates...
+ 
+  ########## Grid parameters as read from sgwinp.txt  ########## 
+ 
+  nx                           80
+  ny                           80
+  nz                           80
+  n                        512000
+  dx                   0.38479500
+  dy                   0.38479500
+  dz                   0.38479500
+  dv                   0.05697552
+  nsp                           1
+  homo energy          0.21876871 
+  lumo energy          0.23156850 
+ 
+  ############ READING DFT ORBITALS FROM sgwinp.txt ############
+ 
+  ORBI(428) read: spin = 1; energy =       0.21876871; norm =       1.00000000
+  DENS read: Nr. electrons == integral(dens*d3r)=     855.9967854016069     
+ 
+  Positions in bohr, read from: sgwinp.txt 
+  Number of atoms   :           214
+  Number of elements:             1
+ 
+  ############ NOW READING RANDOM SEED (KISS ALGORITHM) ############ 
+ 
+   Using 2 files: 
+   (I)  counter.inp, with 1 small integer (run counter) modifying seeds 
+          run counter =            0
+ 
+   (II) random.inp,  with              6  lines 
+          format: line_s,  seed(1:4)          
+            1      1328292723921723482       465843787610976291 
+         1238272155852012       285837261819111683
+            2      3445678193538273923       428101811812099199 
+         3338291112838288       233457899181011188
+            3      2232345667998282721       233448848321118821 
+         2213897875588299       339222817193322919
+            4      1292837426446364573       320382827374565487 
+         3823347573727627       238475732726262611
+            5      3363583475683236724       272234274865828822 
+         2438274743767322       444567624677123262
+            6      2236563722622622364       222822828282737372 
+         4432211143786839       332274728281811811
+  
+  ############ READING PSEUDOPOTENTIAL FILES ############
+ 
+  Reading pseudopotential file: Si.pw-mt_fhi.UPF
+  Finished reading PP 
+ 
+  WARNING: potential problem in pseudopotential: <phi_L|phi_L> isnt 1:
+  -> atom-charge 14 and L = 3: <phi_L|phi_L> =     1.088384
+ 
+  Finished checking PP 
+  Total charge:     856.0000    
+ 
+  ############# ECHO OF INPUT VARIABLES #############
+  MC (total)            =         1024
+  # MC_STEP (each core) =          128
+  multiplicity (=nsp)   =            1
+  work_dir:       = GW_WORK.0
+  scratch_dir     = ./GW_SCRATCH.0
+  centers units   = bohr
+  flgdyn          =  F  i.e., W-RPA   
+  det_tddft       =  F
+  binary inp.     =  F
+  periodic        =  T
+  usegpu          =  T
+  block_gam_alg   =  F
+  scale_vh        =            1
+  N_cores (mpi)   =            8
+  buffer_size     =            1
+  ntddft*nsp      =           32
+  orb_indx        =          428
+  PP:nrppmx       =         1200
+  xc_type         =            2   (LIBXC# 1 12)                         
+  projection      =  F
+  gapped-filtering=  T
+  homo            =   0.2187687136717141       (read from "sgwinp.txt")
+  lumo            =   0.2315685025129468       (read from "sgwinp.txt")
+  ekcut           =     8.00000
+  dt              =     0.05000
+  gamma           =     0.06000
+  sm              =     0.00010
+  charge_net      =     0.00000
+  nxi             =     10000
+  segment_fraction=     0.00300
+ 
+  ############ DETERMINED VARIABLES ############ 
+  tmax         =    50.00000    
+  nw           =         8192
+  dw           =   1.5339808E-02
+ 
+  recalculated net charge (from density):    3.2145984E-03
+ 
+ 
+  NOTE: memory requirements per core due to psi -- in GB    8.0080003E-02
+ 
+  For atom type             1  intgrl[(-Z/r-vloc(r))d3r] =  
+   -1.098803466671351     
+  shift due to pseudopotential   -8.0607522408315101E-003
+  segment width          1537
+ 
+  <phi|H|phi> computed from orbital from file:    0.2191061    
+                      vs. eorb read from file:    0.2187687    
+ 
+ 
+  ############ HAMILTONIAN INFO: ############ 
+ 
+  hmin       =      -0.19346765
+  hmax       =       8.15335941
+  dh scaling =       1.04999995
+  dh         =       4.38208389
+  havg       =       3.97994566
+  nchbmx     =             2048
+  scaled_gap =       0.00292094
+  -> Gapped-filtering will be used
+     to prepare the occupied stochastic states
+
+  Time:  preparation     22.64063    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=          8 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          1
+ 
+  dTime for filtering   (rank 0):           19.680 s
+  dTime for propagation (rank 0):           18.614 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+             8      -0.317517       0.003158          MC, <X>            +-stat.err
+             8      -0.047074       0.014855          MC, Sig_R(e_qp)    +-stat.err
+             8      -0.043044       0.014939          MC, Sig_R(e_ks)    +-stat.err
+             8       0.000320       0.000333          MC, Sig_I(e_ks)    +-stat.err
+             8       0.765966                         MC, Z             
+             8       0.232298                         MC, Elin          
+             8       0.232299       0.014855          MC, E_qp           +-stat.err
+             8       0.000074       0.000318          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             1 => time:     63.50105    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         16 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          2
+ 
+  dTime for filtering   (rank 0):           19.677 s
+  dTime for propagation (rank 0):           18.627 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            16      -0.318245       0.002918          MC, <X>            +-stat.err
+            16      -0.048309       0.011348          MC, Sig_R(e_qp)    +-stat.err
+            16      -0.045089       0.011283          MC, Sig_R(e_ks)    +-stat.err
+            16       0.000199       0.000295          MC, Sig_I(e_ks)    +-stat.err
+            16       0.777128                         MC, Z             
+            16       0.230335                         MC, Elin          
+            16       0.230336       0.011348          MC, E_qp           +-stat.err
+            16      -0.000040       0.000270          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             2 => time:     103.6273    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         24 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          3
+ 
+  dTime for filtering   (rank 0):           19.665 s
+  dTime for propagation (rank 0):           18.615 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            24      -0.315824       0.002403          MC, <X>            +-stat.err
+            24      -0.055145       0.009246          MC, Sig_R(e_qp)    +-stat.err
+            24      -0.053167       0.009131          MC, Sig_R(e_ks)    +-stat.err
+            24       0.000274       0.000225          MC, Sig_I(e_ks)    +-stat.err
+            24       0.775072                         MC, Z             
+            24       0.225921                         MC, Elin          
+            24       0.225921       0.009246          MC, E_qp           +-stat.err
+            24       0.000107       0.000215          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             3 => time:     143.7402    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         32 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          4
+ 
+  dTime for filtering   (rank 0):           19.671 s
+  dTime for propagation (rank 0):           18.622 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            32      -0.316025       0.001955          MC, <X>            +-stat.err
+            32      -0.054509       0.007137          MC, Sig_R(e_qp)    +-stat.err
+            32      -0.052493       0.007034          MC, Sig_R(e_ks)    +-stat.err
+            32       0.000236       0.000188          MC, Sig_I(e_ks)    +-stat.err
+            32       0.782436                         MC, Z             
+            32       0.226356                         MC, Elin          
+            32       0.226356       0.007137          MC, E_qp           +-stat.err
+            32       0.000075       0.000178          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             4 => time:     183.8696    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         40 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          5
+ 
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.606 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            40      -0.315096       0.001742          MC, <X>            +-stat.err
+            40      -0.050630       0.006425          MC, Sig_R(e_qp)    +-stat.err
+            40      -0.047207       0.006358          MC, Sig_R(e_ks)    +-stat.err
+            40       0.000284       0.000162          MC, Sig_I(e_ks)    +-stat.err
+            40       0.778773                         MC, Z             
+            40       0.231162                         MC, Elin          
+            40       0.231163       0.006425          MC, E_qp           +-stat.err
+            40       0.000012       0.000149          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             5 => time:     224.0322    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         48 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          6
+ 
+  dTime for filtering   (rank 0):           19.677 s
+  dTime for propagation (rank 0):           18.628 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            48      -0.314623       0.001590          MC, <X>            +-stat.err
+            48      -0.053347       0.005848          MC, Sig_R(e_qp)    +-stat.err
+            48      -0.050531       0.005767          MC, Sig_R(e_ks)    +-stat.err
+            48       0.000283       0.000139          MC, Sig_I(e_ks)    +-stat.err
+            48       0.777019                         MC, Z             
+            48       0.228920                         MC, Elin          
+            48       0.228920       0.005848          MC, E_qp           +-stat.err
+            48       0.000048       0.000129          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             6 => time:     264.2306    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         56 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          7
+ 
+  dTime for filtering   (rank 0):           19.665 s
+  dTime for propagation (rank 0):           18.616 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            56      -0.315138       0.001416          MC, <X>            +-stat.err
+            56      -0.054569       0.005342          MC, Sig_R(e_qp)    +-stat.err
+            56      -0.052306       0.005264          MC, Sig_R(e_ks)    +-stat.err
+            56       0.000298       0.000121          MC, Sig_I(e_ks)    +-stat.err
+            56       0.781091                         MC, Z             
+            56       0.227182                         MC, Elin          
+            56       0.227182       0.005342          MC, E_qp           +-stat.err
+            56       0.000111       0.000113          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             7 => time:     304.4255    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         64 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          8
+ 
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.622 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            64      -0.315230       0.001343          MC, <X>            +-stat.err
+            64      -0.054805       0.005094          MC, Sig_R(e_qp)    +-stat.err
+            64      -0.052672       0.005018          MC, Sig_R(e_ks)    +-stat.err
+            64       0.000314       0.000117          MC, Sig_I(e_ks)    +-stat.err
+            64       0.784098                         MC, Z             
+            64       0.226854                         MC, Elin          
+            64       0.226854       0.005094          MC, E_qp           +-stat.err
+            64       0.000134       0.000106          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             8 => time:     344.5966    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         72 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          9
+ 
+  dTime for filtering   (rank 0):           19.706 s
+  dTime for propagation (rank 0):           18.612 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            72      -0.314945       0.001219          MC, <X>            +-stat.err
+            72      -0.056061       0.004633          MC, Sig_R(e_qp)    +-stat.err
+            72      -0.054208       0.004558          MC, Sig_R(e_ks)    +-stat.err
+            72       0.000277       0.000109          MC, Sig_I(e_ks)    +-stat.err
+            72       0.785268                         MC, Z             
+            72       0.225883                         MC, Elin          
+            72       0.225883       0.004633          MC, E_qp           +-stat.err
+            72       0.000120       0.000099          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             9 => time:     384.7689    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         80 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         10
+ 
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.622 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            80      -0.314939       0.001142          MC, <X>            +-stat.err
+            80      -0.056736       0.004237          MC, Sig_R(e_qp)    +-stat.err
+            80      -0.055058       0.004164          MC, Sig_R(e_ks)    +-stat.err
+            80       0.000254       0.000105          MC, Sig_I(e_ks)    +-stat.err
+            80       0.784498                         MC, Z             
+            80       0.225214                         MC, Elin          
+            80       0.225214       0.004237          MC, E_qp           +-stat.err
+            80       0.000105       0.000097          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            10 => time:     424.9837    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         88 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         11
+ 
+  dTime for filtering   (rank 0):           19.653 s
+  dTime for propagation (rank 0):           18.613 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            88      -0.314527       0.001068          MC, <X>            +-stat.err
+            88      -0.056074       0.004063          MC, Sig_R(e_qp)    +-stat.err
+            88      -0.054121       0.004001          MC, Sig_R(e_ks)    +-stat.err
+            88       0.000241       0.000098          MC, Sig_I(e_ks)    +-stat.err
+            88       0.786217                         MC, Z             
+            88       0.226289                         MC, Elin          
+            88       0.226289       0.004063          MC, E_qp           +-stat.err
+            88       0.000072       0.000089          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            11 => time:     465.2574    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         96 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         12
+ 
+  dTime for filtering   (rank 0):           19.657 s
+  dTime for propagation (rank 0):           18.623 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+            96      -0.314451       0.001018          MC, <X>            +-stat.err
+            96      -0.056202       0.003987          MC, Sig_R(e_qp)    +-stat.err
+            96      -0.054262       0.003926          MC, Sig_R(e_ks)    +-stat.err
+            96       0.000273       0.000095          MC, Sig_I(e_ks)    +-stat.err
+            96       0.786083                         MC, Z             
+            96       0.226236                         MC, Elin          
+            96       0.226236       0.003987          MC, E_qp           +-stat.err
+            96       0.000106       0.000088          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            12 => time:     505.3994    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        104 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         13
+ 
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.605 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           104      -0.314435       0.000977          MC, <X>            +-stat.err
+           104      -0.056635       0.003750          MC, Sig_R(e_qp)    +-stat.err
+           104      -0.054817       0.003688          MC, Sig_R(e_ks)    +-stat.err
+           104       0.000270       0.000090          MC, Sig_I(e_ks)    +-stat.err
+           104       0.786872                         MC, Z             
+           104       0.225820                         MC, Elin          
+           104       0.225820       0.003750          MC, E_qp           +-stat.err
+           104       0.000113       0.000084          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            13 => time:     545.5555    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        112 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         14
+ 
+  dTime for filtering   (rank 0):           19.687 s
+  dTime for propagation (rank 0):           18.621 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           112      -0.314645       0.000921          MC, <X>            +-stat.err
+           112      -0.056244       0.003577          MC, Sig_R(e_qp)    +-stat.err
+           112      -0.054365       0.003521          MC, Sig_R(e_ks)    +-stat.err
+           112       0.000273       0.000086          MC, Sig_I(e_ks)    +-stat.err
+           112       0.785854                         MC, Z             
+           112       0.226001                         MC, Elin          
+           112       0.226001       0.003577          MC, E_qp           +-stat.err
+           112       0.000110       0.000080          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            14 => time:     585.6778    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        120 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         15
+ 
+  dTime for filtering   (rank 0):           19.676 s
+  dTime for propagation (rank 0):           18.616 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           120      -0.314394       0.000915          MC, <X>            +-stat.err
+           120      -0.057328       0.003447          MC, Sig_R(e_qp)    +-stat.err
+           120      -0.055662       0.003386          MC, Sig_R(e_ks)    +-stat.err
+           120       0.000239       0.000082          MC, Sig_I(e_ks)    +-stat.err
+           120       0.784459                         MC, Z             
+           120       0.225168                         MC, Elin          
+           120       0.225168       0.003447          MC, E_qp           +-stat.err
+           120       0.000098       0.000077          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            15 => time:     625.7974    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        128 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         16
+ 
+  dTime for filtering   (rank 0):           19.678 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           128      -0.314203       0.000912          MC, <X>            +-stat.err
+           128      -0.057570       0.003370          MC, Sig_R(e_qp)    +-stat.err
+           128      -0.055925       0.003305          MC, Sig_R(e_ks)    +-stat.err
+           128       0.000228       0.000080          MC, Sig_I(e_ks)    +-stat.err
+           128       0.785229                         MC, Z             
+           128       0.225117                         MC, Elin          
+           128       0.225117       0.003370          MC, E_qp           +-stat.err
+           128       0.000090       0.000075          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            16 => time:     666.2693    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        136 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         17
+ 
+  dTime for filtering   (rank 0):           19.681 s
+  dTime for propagation (rank 0):           18.605 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           136      -0.314066       0.000878          MC, <X>            +-stat.err
+           136      -0.057491       0.003349          MC, Sig_R(e_qp)    +-stat.err
+           136      -0.055778       0.003287          MC, Sig_R(e_ks)    +-stat.err
+           136       0.000239       0.000077          MC, Sig_I(e_ks)    +-stat.err
+           136       0.784215                         MC, Z             
+           136       0.225333                         MC, Elin          
+           136       0.225333       0.003349          MC, E_qp           +-stat.err
+           136       0.000090       0.000073          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            17 => time:     706.3723    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        144 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         18
+ 
+  dTime for filtering   (rank 0):           19.668 s
+  dTime for propagation (rank 0):           18.620 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           144      -0.314519       0.000878          MC, <X>            +-stat.err
+           144      -0.056824       0.003259          MC, Sig_R(e_qp)    +-stat.err
+           144      -0.055066       0.003194          MC, Sig_R(e_ks)    +-stat.err
+           144       0.000239       0.000073          MC, Sig_I(e_ks)    +-stat.err
+           144       0.785579                         MC, Z             
+           144       0.225546                         MC, Elin          
+           144       0.225546       0.003259          MC, E_qp           +-stat.err
+           144       0.000089       0.000069          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            18 => time:     746.5675    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        152 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         19
+ 
+  dTime for filtering   (rank 0):           19.667 s
+  dTime for propagation (rank 0):           18.614 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           152      -0.314268       0.000856          MC, <X>            +-stat.err
+           152      -0.057186       0.003174          MC, Sig_R(e_qp)    +-stat.err
+           152      -0.055465       0.003110          MC, Sig_R(e_ks)    +-stat.err
+           152       0.000236       0.000071          MC, Sig_I(e_ks)    +-stat.err
+           152       0.786236                         MC, Z             
+           152       0.225436                         MC, Elin          
+           152       0.225436       0.003174          MC, E_qp           +-stat.err
+           152       0.000089       0.000067          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            19 => time:     786.6752    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        160 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         20
+ 
+  dTime for filtering   (rank 0):           19.672 s
+  dTime for propagation (rank 0):           18.616 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           160      -0.313984       0.000861          MC, <X>            +-stat.err
+           160      -0.057724       0.003083          MC, Sig_R(e_qp)    +-stat.err
+           160      -0.056078       0.003012          MC, Sig_R(e_ks)    +-stat.err
+           160       0.000237       0.000071          MC, Sig_I(e_ks)    +-stat.err
+           160       0.786823                         MC, Z             
+           160       0.225182                         MC, Elin          
+           160       0.225182       0.003083          MC, E_qp           +-stat.err
+           160       0.000094       0.000070          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            20 => time:     826.8300    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        168 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         21
+ 
+  dTime for filtering   (rank 0):           19.716 s
+  dTime for propagation (rank 0):           18.606 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           168      -0.313907       0.000871          MC, <X>            +-stat.err
+           168      -0.057162       0.002996          MC, Sig_R(e_qp)    +-stat.err
+           168      -0.055339       0.002919          MC, Sig_R(e_ks)    +-stat.err
+           168       0.000268       0.000072          MC, Sig_I(e_ks)    +-stat.err
+           168       0.786452                         MC, Z             
+           168       0.225821                         MC, Elin          
+           168       0.225821       0.002996          MC, E_qp           +-stat.err
+           168       0.000109       0.000071          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            21 => time:     867.0389    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        176 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         22
+ 
+  dTime for filtering   (rank 0):           19.649 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           176      -0.313832       0.000854          MC, <X>            +-stat.err
+           176      -0.056079       0.003082          MC, Sig_R(e_qp)    +-stat.err
+           176      -0.053928       0.003013          MC, Sig_R(e_ks)    +-stat.err
+           176       0.000305       0.000073          MC, Sig_I(e_ks)    +-stat.err
+           176       0.785401                         MC, Z             
+           176       0.226978                         MC, Elin          
+           176       0.226978       0.003082          MC, E_qp           +-stat.err
+           176       0.000115       0.000071          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            22 => time:     907.2419    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        184 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         23
+ 
+  dTime for filtering   (rank 0):           19.654 s
+  dTime for propagation (rank 0):           18.640 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           184      -0.313862       0.000842          MC, <X>            +-stat.err
+           184      -0.056162       0.003034          MC, Sig_R(e_qp)    +-stat.err
+           184      -0.054037       0.002966          MC, Sig_R(e_ks)    +-stat.err
+           184       0.000305       0.000072          MC, Sig_I(e_ks)    +-stat.err
+           184       0.785081                         MC, Z             
+           184       0.226867                         MC, Elin          
+           184       0.226867       0.003034          MC, E_qp           +-stat.err
+           184       0.000117       0.000070          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            23 => time:     947.4342    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        192 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         24
+ 
+  dTime for filtering   (rank 0):           19.641 s
+  dTime for propagation (rank 0):           18.615 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           192      -0.313954       0.000818          MC, <X>            +-stat.err
+           192      -0.055372       0.003020          MC, Sig_R(e_qp)    +-stat.err
+           192      -0.053045       0.002957          MC, Sig_R(e_ks)    +-stat.err
+           192       0.000295       0.000071          MC, Sig_I(e_ks)    +-stat.err
+           192       0.784185                         MC, Z             
+           192       0.227564                         MC, Elin          
+           192       0.227564       0.003020          MC, E_qp           +-stat.err
+           192       0.000092       0.000068          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            24 => time:     987.7338    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        200 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         25
+ 
+  dTime for filtering   (rank 0):           19.667 s
+  dTime for propagation (rank 0):           18.626 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           200      -0.314073       0.000799          MC, <X>            +-stat.err
+           200      -0.055110       0.002920          MC, Sig_R(e_qp)    +-stat.err
+           200      -0.052758       0.002858          MC, Sig_R(e_ks)    +-stat.err
+           200       0.000294       0.000069          MC, Sig_I(e_ks)    +-stat.err
+           200       0.785246                         MC, Z             
+           200       0.227706                         MC, Elin          
+           200       0.227706       0.002920          MC, E_qp           +-stat.err
+           200       0.000088       0.000067          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            25 => time:     1027.882    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        208 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         26
+ 
+  dTime for filtering   (rank 0):           19.716 s
+  dTime for propagation (rank 0):           18.634 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           208      -0.314026       0.000790          MC, <X>            +-stat.err
+           208      -0.055432       0.002839          MC, Sig_R(e_qp)    +-stat.err
+           208      -0.053154       0.002776          MC, Sig_R(e_ks)    +-stat.err
+           208       0.000288       0.000067          MC, Sig_I(e_ks)    +-stat.err
+           208       0.785129                         MC, Z             
+           208       0.227432                         MC, Elin          
+           208       0.227432       0.002839          MC, E_qp           +-stat.err
+           208       0.000088       0.000065          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            26 => time:     1068.093    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        216 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         27
+ 
+  dTime for filtering   (rank 0):           19.666 s
+  dTime for propagation (rank 0):           18.633 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           216      -0.314103       0.000771          MC, <X>            +-stat.err
+           216      -0.054445       0.002955          MC, Sig_R(e_qp)    +-stat.err
+           216      -0.051893       0.002907          MC, Sig_R(e_ks)    +-stat.err
+           216       0.000305       0.000069          MC, Sig_I(e_ks)    +-stat.err
+           216       0.783522                         MC, Z             
+           216       0.228341                         MC, Elin          
+           216       0.228341       0.002955          MC, E_qp           +-stat.err
+           216       0.000081       0.000065          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            27 => time:     1108.270    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        224 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         28
+ 
+  dTime for filtering   (rank 0):           19.674 s
+  dTime for propagation (rank 0):           18.623 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           224      -0.314167       0.000775          MC, <X>            +-stat.err
+           224      -0.054651       0.002896          MC, Sig_R(e_qp)    +-stat.err
+           224      -0.052169       0.002844          MC, Sig_R(e_ks)    +-stat.err
+           224       0.000288       0.000068          MC, Sig_I(e_ks)    +-stat.err
+           224       0.783217                         MC, Z             
+           224       0.228072                         MC, Elin          
+           224       0.228072       0.002896          MC, E_qp           +-stat.err
+           224       0.000067       0.000066          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            28 => time:     1148.392    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        232 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         29
+ 
+  dTime for filtering   (rank 0):           19.668 s
+  dTime for propagation (rank 0):           18.625 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           232      -0.314091       0.000755          MC, <X>            +-stat.err
+           232      -0.054137       0.002833          MC, Sig_R(e_qp)    +-stat.err
+           232      -0.051499       0.002783          MC, Sig_R(e_ks)    +-stat.err
+           232       0.000304       0.000067          MC, Sig_I(e_ks)    +-stat.err
+           232       0.783659                         MC, Z             
+           232       0.228662                         MC, Elin          
+           232       0.228662       0.002833          MC, E_qp           +-stat.err
+           232       0.000069       0.000064          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            29 => time:     1188.520    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        240 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         30
+ 
+  dTime for filtering   (rank 0):           19.687 s
+  dTime for propagation (rank 0):           18.631 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           240      -0.314197       0.000739          MC, <X>            +-stat.err
+           240      -0.054237       0.002763          MC, Sig_R(e_qp)    +-stat.err
+           240      -0.051654       0.002713          MC, Sig_R(e_ks)    +-stat.err
+           240       0.000297       0.000065          MC, Sig_I(e_ks)    +-stat.err
+           240       0.783525                         MC, Z             
+           240       0.228456                         MC, Elin          
+           240       0.228456       0.002763          MC, E_qp           +-stat.err
+           240       0.000068       0.000063          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            30 => time:     1228.645    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        248 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         31
+ 
+  dTime for filtering   (rank 0):           19.675 s
+  dTime for propagation (rank 0):           18.631 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           248      -0.313990       0.000730          MC, <X>            +-stat.err
+           248      -0.054127       0.002750          MC, Sig_R(e_qp)    +-stat.err
+           248      -0.051463       0.002701          MC, Sig_R(e_ks)    +-stat.err
+           248       0.000289       0.000066          MC, Sig_I(e_ks)    +-stat.err
+           248       0.783970                         MC, Z             
+           248       0.228773                         MC, Elin          
+           248       0.228773       0.002750          MC, E_qp           +-stat.err
+           248       0.000050       0.000063          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            31 => time:     1268.928    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        256 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         32
+ 
+  dTime for filtering   (rank 0):           19.719 s
+  dTime for propagation (rank 0):           18.626 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           256      -0.313739       0.000716          MC, <X>            +-stat.err
+           256      -0.054171       0.002690          MC, Sig_R(e_qp)    +-stat.err
+           256      -0.051455       0.002643          MC, Sig_R(e_ks)    +-stat.err
+           256       0.000298       0.000065          MC, Sig_I(e_ks)    +-stat.err
+           256       0.784276                         MC, Z             
+           256       0.228980                         MC, Elin          
+           256       0.228980       0.002690          MC, E_qp           +-stat.err
+           256       0.000052       0.000062          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            32 => time:     1309.129    
+  dTime for filtering   (rank 0):           19.714 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.659 s
+  dTime for propagation (rank 0):           18.625 s
+  dTime for filtering   (rank 0):           19.661 s
+  dTime for propagation (rank 0):           18.616 s
+  dTime for filtering   (rank 0):           19.649 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.630 s
+  dTime for filtering   (rank 0):           19.678 s
+  dTime for propagation (rank 0):           18.623 s
+  dTime for filtering   (rank 0):           19.685 s
+  dTime for propagation (rank 0):           18.637 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        320 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         40
+ 
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.621 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           320      -0.313379       0.000630          MC, <X>            +-stat.err
+           320      -0.053944       0.002507          MC, Sig_R(e_qp)    +-stat.err
+           320      -0.051064       0.002471          MC, Sig_R(e_ks)    +-stat.err
+           320       0.000312       0.000062          MC, Sig_I(e_ks)    +-stat.err
+           320       0.784138                         MC, Z             
+           320       0.229567                         MC, Elin          
+           320       0.229567       0.002507          MC, E_qp           +-stat.err
+           320       0.000047       0.000059          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            40 => time:     1630.210    
+  dTime for filtering   (rank 0):           19.665 s
+  dTime for propagation (rank 0):           18.626 s
+  dTime for filtering   (rank 0):           19.675 s
+  dTime for propagation (rank 0):           18.624 s
+  dTime for filtering   (rank 0):           19.662 s
+  dTime for propagation (rank 0):           18.620 s
+  dTime for filtering   (rank 0):           19.714 s
+  dTime for propagation (rank 0):           18.624 s
+  dTime for filtering   (rank 0):           19.707 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.659 s
+  dTime for propagation (rank 0):           18.620 s
+  dTime for filtering   (rank 0):           19.649 s
+  dTime for propagation (rank 0):           18.615 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        384 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         48
+ 
+  dTime for filtering   (rank 0):           19.649 s
+  dTime for propagation (rank 0):           18.619 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           384      -0.313554       0.000570          MC, <X>            +-stat.err
+           384      -0.053182       0.002276          MC, Sig_R(e_qp)    +-stat.err
+           384      -0.050130       0.002242          MC, Sig_R(e_ks)    +-stat.err
+           384       0.000309       0.000055          MC, Sig_I(e_ks)    +-stat.err
+           384       0.783536                         MC, Z             
+           384       0.230154                         MC, Elin          
+           384       0.230154       0.002276          MC, E_qp           +-stat.err
+           384       0.000026       0.000053          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            48 => time:     1964.474    
+  dTime for filtering   (rank 0):           19.675 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.671 s
+  dTime for propagation (rank 0):           18.623 s
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.616 s
+  dTime for filtering   (rank 0):           19.682 s
+  dTime for propagation (rank 0):           18.619 s
+  dTime for filtering   (rank 0):           19.678 s
+  dTime for propagation (rank 0):           18.609 s
+  dTime for filtering   (rank 0):           19.680 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.685 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        448 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         56
+ 
+  dTime for filtering   (rank 0):           19.712 s
+  dTime for propagation (rank 0):           18.620 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           448      -0.313468       0.000529          MC, <X>            +-stat.err
+           448      -0.054109       0.002081          MC, Sig_R(e_qp)    +-stat.err
+           448      -0.051292       0.002048          MC, Sig_R(e_ks)    +-stat.err
+           448       0.000288       0.000051          MC, Sig_I(e_ks)    +-stat.err
+           448       0.783713                         MC, Z             
+           448       0.229313                         MC, Elin          
+           448       0.229313       0.002081          MC, E_qp           +-stat.err
+           448       0.000034       0.000048          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            56 => time:     2285.640    
+  dTime for filtering   (rank 0):           19.651 s
+  dTime for propagation (rank 0):           18.605 s
+  dTime for filtering   (rank 0):           19.657 s
+  dTime for propagation (rank 0):           18.626 s
+  dTime for filtering   (rank 0):           19.656 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.678 s
+  dTime for propagation (rank 0):           18.624 s
+  dTime for filtering   (rank 0):           19.671 s
+  dTime for propagation (rank 0):           18.610 s
+  dTime for filtering   (rank 0):           19.666 s
+  dTime for propagation (rank 0):           18.625 s
+  dTime for filtering   (rank 0):           19.664 s
+  dTime for propagation (rank 0):           18.618 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        512 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         64
+ 
+  dTime for filtering   (rank 0):           19.674 s
+  dTime for propagation (rank 0):           18.623 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           512      -0.313363       0.000496          MC, <X>            +-stat.err
+           512      -0.053986       0.001904          MC, Sig_R(e_qp)    +-stat.err
+           512      -0.051118       0.001871          MC, Sig_R(e_ks)    +-stat.err
+           512       0.000281       0.000047          MC, Sig_I(e_ks)    +-stat.err
+           512       0.784410                         MC, Z             
+           512       0.229541                         MC, Elin          
+           512       0.229541       0.001904          MC, E_qp           +-stat.err
+           512       0.000023       0.000045          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            64 => time:     2606.490    
+  dTime for filtering   (rank 0):           19.672 s
+  dTime for propagation (rank 0):           18.606 s
+  dTime for filtering   (rank 0):           19.669 s
+  dTime for propagation (rank 0):           18.623 s
+  dTime for filtering   (rank 0):           19.717 s
+  dTime for propagation (rank 0):           18.619 s
+  dTime for filtering   (rank 0):           19.704 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.651 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.655 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.651 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        576 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         72
+ 
+  dTime for filtering   (rank 0):           19.664 s
+  dTime for propagation (rank 0):           18.621 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           576      -0.313343       0.000470          MC, <X>            +-stat.err
+           576      -0.053484       0.001800          MC, Sig_R(e_qp)    +-stat.err
+           576      -0.050465       0.001770          MC, Sig_R(e_ks)    +-stat.err
+           576       0.000280       0.000044          MC, Sig_I(e_ks)    +-stat.err
+           576       0.783971                         MC, Z             
+           576       0.230063                         MC, Elin          
+           576       0.230063       0.001800          MC, E_qp           +-stat.err
+           576       0.000007       0.000041          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            72 => time:     2927.550    
+  dTime for filtering   (rank 0):           19.666 s
+  dTime for propagation (rank 0):           18.606 s
+  dTime for filtering   (rank 0):           19.681 s
+  dTime for propagation (rank 0):           18.626 s
+  dTime for filtering   (rank 0):           19.668 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.664 s
+  dTime for propagation (rank 0):           18.620 s
+  dTime for filtering   (rank 0):           19.667 s
+  dTime for propagation (rank 0):           18.609 s
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.711 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        640 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         80
+ 
+  dTime for filtering   (rank 0):           19.656 s
+  dTime for propagation (rank 0):           18.618 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           640      -0.313557       0.000451          MC, <X>            +-stat.err
+           640      -0.053144       0.001697          MC, Sig_R(e_qp)    +-stat.err
+           640      -0.050089       0.001668          MC, Sig_R(e_ks)    +-stat.err
+           640       0.000279       0.000041          MC, Sig_I(e_ks)    +-stat.err
+           640       0.783914                         MC, Z             
+           640       0.230189                         MC, Elin          
+           640       0.230189       0.001697          MC, E_qp           +-stat.err
+           640       0.000006       0.000038          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            80 => time:     3248.743    
+  dTime for filtering   (rank 0):           19.650 s
+  dTime for propagation (rank 0):           18.609 s
+  dTime for filtering   (rank 0):           19.693 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.679 s
+  dTime for propagation (rank 0):           18.617 s
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.616 s
+  dTime for filtering   (rank 0):           19.675 s
+  dTime for propagation (rank 0):           18.610 s
+  dTime for filtering   (rank 0):           19.671 s
+  dTime for propagation (rank 0):           18.620 s
+  dTime for filtering   (rank 0):           19.683 s
+  dTime for propagation (rank 0):           18.620 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        704 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         88
+ 
+  dTime for filtering   (rank 0):           19.664 s
+  dTime for propagation (rank 0):           18.634 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           704      -0.313344       0.000431          MC, <X>            +-stat.err
+           704      -0.053040       0.001677          MC, Sig_R(e_qp)    +-stat.err
+           704      -0.049878       0.001651          MC, Sig_R(e_ks)    +-stat.err
+           704       0.000266       0.000040          MC, Sig_I(e_ks)    +-stat.err
+           704       0.782823                         MC, Z             
+           704       0.230505                         MC, Elin          
+           704       0.230505       0.001677          MC, E_qp           +-stat.err
+           704      -0.000017       0.000039          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            88 => time:     3569.524    
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.606 s
+  dTime for filtering   (rank 0):           19.717 s
+  dTime for propagation (rank 0):           18.645 s
+  dTime for filtering   (rank 0):           19.710 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.650 s
+  dTime for propagation (rank 0):           18.638 s
+  dTime for filtering   (rank 0):           19.642 s
+  dTime for propagation (rank 0):           18.605 s
+  dTime for filtering   (rank 0):           19.656 s
+  dTime for propagation (rank 0):           18.642 s
+  dTime for filtering   (rank 0):           19.660 s
+  dTime for propagation (rank 0):           18.616 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        768 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         96
+ 
+  dTime for filtering   (rank 0):           19.670 s
+  dTime for propagation (rank 0):           18.637 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           768      -0.313167       0.000411          MC, <X>            +-stat.err
+           768      -0.052859       0.001582          MC, Sig_R(e_qp)    +-stat.err
+           768      -0.049623       0.001557          MC, Sig_R(e_ks)    +-stat.err
+           768       0.000268       0.000038          MC, Sig_I(e_ks)    +-stat.err
+           768       0.784155                         MC, Z             
+           768       0.230864                         MC, Elin          
+           768       0.230864       0.001582          MC, E_qp           +-stat.err
+           768      -0.000018       0.000036          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            96 => time:     3890.435    
+  dTime for filtering   (rank 0):           19.669 s
+  dTime for propagation (rank 0):           18.605 s
+  dTime for filtering   (rank 0):           19.669 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.679 s
+  dTime for propagation (rank 0):           18.616 s
+  dTime for filtering   (rank 0):           19.665 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.717 s
+  dTime for propagation (rank 0):           18.606 s
+  dTime for filtering   (rank 0):           19.711 s
+  dTime for propagation (rank 0):           18.639 s
+  dTime for filtering   (rank 0):           19.661 s
+  dTime for propagation (rank 0):           18.614 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        832 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        104
+ 
+  dTime for filtering   (rank 0):           19.650 s
+  dTime for propagation (rank 0):           18.635 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           832      -0.313384       0.000399          MC, <X>            +-stat.err
+           832      -0.052637       0.001521          MC, Sig_R(e_qp)    +-stat.err
+           832      -0.049391       0.001498          MC, Sig_R(e_ks)    +-stat.err
+           832       0.000268       0.000036          MC, Sig_I(e_ks)    +-stat.err
+           832       0.783710                         MC, Z             
+           832       0.230868                         MC, Elin          
+           832       0.230869       0.001521          MC, E_qp           +-stat.err
+           832      -0.000016       0.000034          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           104 => time:     4211.529    
+  dTime for filtering   (rank 0):           19.652 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.681 s
+  dTime for propagation (rank 0):           18.641 s
+  dTime for filtering   (rank 0):           19.675 s
+  dTime for propagation (rank 0):           18.615 s
+  dTime for filtering   (rank 0):           19.673 s
+  dTime for propagation (rank 0):           18.627 s
+  dTime for filtering   (rank 0):           19.668 s
+  dTime for propagation (rank 0):           18.608 s
+  dTime for filtering   (rank 0):           19.679 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.616 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        896 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        112
+ 
+  dTime for filtering   (rank 0):           19.674 s
+  dTime for propagation (rank 0):           18.624 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           896      -0.313524       0.000383          MC, <X>            +-stat.err
+           896      -0.052624       0.001457          MC, Sig_R(e_qp)    +-stat.err
+           896      -0.049406       0.001434          MC, Sig_R(e_ks)    +-stat.err
+           896       0.000253       0.000035          MC, Sig_I(e_ks)    +-stat.err
+           896       0.783287                         MC, Z             
+           896       0.230741                         MC, Elin          
+           896       0.230742       0.001457          MC, E_qp           +-stat.err
+           896      -0.000029       0.000034          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           112 => time:     4535.857    
+  dTime for filtering   (rank 0):           19.714 s
+  dTime for propagation (rank 0):           18.609 s
+  dTime for filtering   (rank 0):           19.646 s
+  dTime for propagation (rank 0):           18.621 s
+  dTime for filtering   (rank 0):           19.653 s
+  dTime for propagation (rank 0):           18.617 s
+  dTime for filtering   (rank 0):           19.644 s
+  dTime for propagation (rank 0):           18.617 s
+  dTime for filtering   (rank 0):           19.663 s
+  dTime for propagation (rank 0):           18.607 s
+  dTime for filtering   (rank 0):           19.676 s
+  dTime for propagation (rank 0):           18.618 s
+  dTime for filtering   (rank 0):           19.683 s
+  dTime for propagation (rank 0):           18.618 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        960 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        120
+ 
+  dTime for filtering   (rank 0):           19.665 s
+  dTime for propagation (rank 0):           18.615 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+           960      -0.313505       0.000370          MC, <X>            +-stat.err
+           960      -0.052856       0.001413          MC, Sig_R(e_qp)    +-stat.err
+           960      -0.049711       0.001391          MC, Sig_R(e_ks)    +-stat.err
+           960       0.000233       0.000034          MC, Sig_I(e_ks)    +-stat.err
+           960       0.784068                         MC, Z             
+           960       0.230529                         MC, Elin          
+           960       0.230529       0.001413          MC, E_qp           +-stat.err
+           960      -0.000042       0.000032          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           120 => time:     4857.276    
+  dTime for filtering   (rank 0):           19.681 s
+  dTime for propagation (rank 0):           18.613 s
+  dTime for filtering   (rank 0):           19.680 s
+  dTime for propagation (rank 0):           18.631 s
+  dTime for filtering   (rank 0):           19.704 s
+  dTime for propagation (rank 0):           18.622 s
+  dTime for filtering   (rank 0):           19.716 s
+  dTime for propagation (rank 0):           18.666 s
+  dTime for filtering   (rank 0):           19.714 s
+  dTime for propagation (rank 0):           18.613 s
+  dTime for filtering   (rank 0):           19.668 s
+  dTime for propagation (rank 0):           18.631 s
+  dTime for filtering   (rank 0):           19.654 s
+  dTime for propagation (rank 0):           18.617 s
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=       1024 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        128
+ 
+  dTime for filtering   (rank 0):           19.660 s
+  dTime for propagation (rank 0):           18.630 s
+ 
+                     0.219106                         E                 
+                    -0.377784                         <V>               
+          1024      -0.313617       0.000356          MC, <X>            +-stat.err
+          1024      -0.053246       0.001362          MC, Sig_R(e_qp)    +-stat.err
+          1024      -0.050244       0.001341          MC, Sig_R(e_ks)    +-stat.err
+          1024       0.000218       0.000033          MC, Sig_I(e_ks)    +-stat.err
+          1024       0.784369                         MC, Z             
+          1024       0.230027                         MC, Elin          
+          1024       0.230027       0.001362          MC, E_qp           +-stat.err
+          1024      -0.000046       0.000032          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           128 => time:     5178.465    
+  Time:  program end     5178.466    

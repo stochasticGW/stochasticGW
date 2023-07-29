@@ -1,0 +1,46 @@
+&control
+   prefix = 'bn'
+   calculation = 'scf'
+   restart_mode = 'from_scratch'
+   tstress = .true.
+   etot_conv_thr = 1d-5
+   forc_conv_thr = 1d-4
+/
+&system
+   ibrav = 0
+   nat = 8
+   ntyp = 2
+   nbnd = 32
+   ecutwfc = 16.0
+   assume_isolated = '2D'
+   nosym_evc = .true.
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.7
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+/
+CELL_PARAMETERS bohr
+  9.100843876   0.000000000   0.000000000
+  0.000000000   7.877958854   0.000000000
+  0.000000000   0.000000000  40.000000000
+ATOMIC_SPECIES
+  B 10.81    B.pw-mt_fhi.UPF
+  N 14.00674 N.pw-mt_fhi.UPF
+ATOMIC_POSITIONS bohr
+  B    1.1376058679        1.3132639769       20.0000000000
+  N    3.4128162493        2.6257159788       20.0000000000
+  B    3.4128163857        5.2522425833       20.0000000000
+  N    1.1376052418        6.5646953378       20.0000000000
+  B    5.6880276673        1.3132625937       20.0000000000
+  N    7.9632387509        2.6257161186       20.0000000000
+  B    7.9632380244        5.2522425017       20.0000000000
+  N    5.6880269858        6.5646960583       20.0000000000
+K_POINTS automatic
+  1 1 1 0 0 0
+

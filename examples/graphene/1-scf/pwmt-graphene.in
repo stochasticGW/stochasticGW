@@ -1,0 +1,44 @@
+&control
+   prefix = 'graphene'
+   calculation = 'scf'
+   restart_mode = 'from_scratch'
+   tstress = .true.
+   etot_conv_thr = 1d-5
+   forc_conv_thr = 1d-4
+/
+&system
+   ibrav = 0
+   nat = 4
+   ntyp = 1
+   nbnd = 16
+   ecutwfc = 32.0
+   assume_isolated = '2D'
+   nosym_evc = .true.
+   occupations= 'smearing'
+   degauss = 1d-4
+   smearing = 'mv' 
+/
+&electrons
+   electron_maxstep = 100
+   conv_thr = 1.0d-8
+   mixing_mode = 'plain'
+   mixing_beta = 0.3
+   mixing_ndim = 8
+   diagonalization = 'david'
+   diago_david_ndim = 4
+   diago_full_acc = .true.
+/
+CELL_PARAMETERS bohr
+  4.585211331   0.000000000   0.000000000
+  0.000000000   7.980700125   0.000000000
+  0.000000000   0.000000000  40.000000000
+ATOMIC_SPECIES
+  C  12.0  C.pw-mt_fhi.UPF
+ATOMIC_POSITIONS bohr
+  C  1.1463028367    1.3301166785    20.0000000000
+  C  3.4389085061    2.6602333478    20.0000000000
+  C  3.4389085141    5.3204667231    20.0000000000
+  C  1.1463028527    6.6505834290    20.0000000000
+K_POINTS automatic
+  1 1 1 0 0 0
+

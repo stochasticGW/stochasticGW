@@ -1,0 +1,6 @@
+&input_pw2bgw
+prefix = 'h2'
+real_or_complex = 2
+wfng_flag=.true.
+rhog_flag=.true.
+/

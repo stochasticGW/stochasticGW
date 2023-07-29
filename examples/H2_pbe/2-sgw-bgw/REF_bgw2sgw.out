@@ -1,0 +1,25 @@
+ Opening input file bgw2sgw.inp
+ 
+ Input rho file: RHO
+ Output rho file: dens.txt
+ Input wfn file: WFN
+ Output wfn file: wf.bin
+ Number of states to write: -1
+ Write output wfn file in binary format: T
+ Output structure file: cnt.ini
+ 
+ Converting charge-density file RHO to dens.txt
+ 
+ Writing structure file cnt.ini
+ Ok
+ 
+ Finished converting charge-density file
+ Converting wavefunction file WFN to wf.bin
+ 
+ Started conversion of wavefunctions with 2 bands(s) at 17:22:55.
+ [ 17:22:55 |   0% ] bands 1 / 2.
+ [ 17:22:55 |  50% ] bands 2 / 2.
+ Finished conversion of wavefunctions at 17:22:55.
+ Elapsed time: 0 s.
+ 
+ Finished converting wavefunction file

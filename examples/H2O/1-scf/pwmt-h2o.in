@@ -1,0 +1,34 @@
+ &control
+    prefix = 'h2o'
+    calculation = 'scf'
+    tstress=.true.
+    etot_conv_thr = 1d-5
+    forc_conv_thr = 1d-4
+ /
+ &system
+    ibrav = 1,
+    celldm(1) = 12.0,
+    nat  = 3,
+    ntyp = 2,
+    nbnd = 8,
+    ecutwfc=38,
+    assume_isolated='mt'
+    exxdiv_treatment = 'gygi-baldereschi'
+    x_gamma_extrapolation = .TRUE.
+    nosym_evc = .true.
+ /
+ &electrons
+    conv_thr = 1.0d-8
+ /
+ &ions
+ /
+ATOMIC_SPECIES
+ O 16.0d0 O.pw-mt_fhi.UPF
+ H 1.00d0 H.pw-mt_fhi.UPF
+ATOMIC_POSITIONS (bohr)
+ O             6.0166584958        6.0166584958        6.0000000000
+ H             7.8238656390        5.7775758652        5.9999006044
+ H             5.7775758652        7.8238656390        6.0001993956
+K_POINTS automatic
+  1 1 1 0 0 0
+

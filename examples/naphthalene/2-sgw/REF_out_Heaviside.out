@@ -1,0 +1,891 @@
+  ************************************************************** 
+ 
+  Stochastic GW, v3.0 (Oct/2022) 
+ 
+  ************************************************************** 
+ 
+  Program uses:             8  cores 
+  icounter =                0
+  scratch_path=
+ .                                                                                                   
+  scratch_dir=
+ ./GW_SCRATCH.0                                                                                      
+  Details on the results are in : GW_WORK.0/details_output.txt
+  
+  Positions in bohr, read from: cnt.ini 
+  Number of atoms :              18
+  Number of elements:             2
+ 
+  ############ NOW READING RANDOM SEED (KISS ALGORITHM) ############ 
+ 
+   Using 2 files: 
+   (I)  counter.inp, with 1 small integer (run counter) modifying seeds 
+          run counter =            0
+ 
+   (II) random.inp,  with              6  lines 
+          format: line_s,  seed(1:4)          
+            1      1328292723921723482       465843787610976291 
+         1238272155852012       285837261819111683
+            2      3445678193538273923       428101811812099199 
+         3338291112838288       233457899181011188
+            3      2232345667998282721       233448848321118821 
+         2213897875588299       339222817193322919
+            4      1292837426446364573       320382827374565487 
+         3823347573727627       238475732726262611
+            5      3363583475683236724       272234274865828822 
+         2438274743767322       444567624677123262
+            6      2236563722622622364       222822828282737372 
+         4432211143786839       332274728281811811
+  
+  ############ READING PSEUDOPOTENTIAL FILES ############
+ 
+  Reading pseudopotential file: C.pw-mt_fhi.UPF
+  Reading pseudopotential file: H.pw-mt_fhi.UPF
+  Finished reading PP 
+ 
+  WARNING: potential problem in pseudopotential: <phi_L|phi_L> isnt 1:
+  -> atom-charge 1 and L = 1: <phi_L|phi_L> =     1.054508
+ 
+  WARNING: potential problem in pseudopotential: <phi_L|phi_L> isnt 1:
+  -> atom-charge 6 and L = 3: <phi_L|phi_L> =     1.098047
+ 
+  Finished checking PP 
+  Total charge:     48.00000    
+ 
+  ############# ECHO OF INPUT VARIABLES #############
+  MC (total)            =         1000
+  # MC_STEP (each core) =          125
+  multiplicity (=nsp)   =            1
+  work_dir:       = GW_WORK.0
+  scratch_dir     = ./GW_SCRATCH.0
+  centers units   = bohr
+  flgdyn          =  F  i.e., W-RPA   
+  det_tddft       =  F
+  binary inp.     =  F
+  periodic        =  T
+  usegpu          =  T
+  block_gam_alg   =  F
+  scale_vh        =            1
+  N_cores (mpi)   =            8
+  buffer_size     =            1
+  ntddft*nsp      =           25
+  orb_indx        =           -1
+  PP:nrppmx       =         1200
+  xc_type         =            2   (LIBXC# 1 12)                         
+  projection      =  F
+  gapped-filtering=  F
+  mu              =  -0.1124346330027062     
+  Tp              =   1.0000000000000000E-002
+  ekcut           =    25.00000
+  dt              =     0.05000
+  gamma           =     0.06000
+  sm              =     0.00010
+  charge_net      =     0.00000
+  nxi             =     10000
+  segment_fraction=     0.00300
+ 
+  ############ DETERMINED VARIABLES ############ 
+  tmax         =    50.00000    
+  nw           =         8192
+  dw           =   1.5339808E-02
+ 
+ 
+  ############# READING DFT ORBITAL FROM orb.txt #############
+  ############## Grid parameters as read  from orb.txt  ############ 
+  nx                      48
+  ny                      44
+  nz                      24
+  n                    50688
+  dx               0.500000
+  dy               0.500000
+  dz               0.500000
+  dv               0.125000
+  Reading orbital energy (overriding eorb from INPUT if given there ) 
+  ############## Grid parameters as read  from dens.txt ############ 
+  nx                      48
+  ny                      44
+  nz                      24
+  n                    50688
+  dx               0.500000
+  dy               0.500000
+  dz               0.500000
+  dv               0.125000
+  Density was read.  Number of electrons == integral(dens*d3r)=  
+    48.00000    
+  recalculated net charge (from density):   -5.6843419E-14
+ 
+ 
+  NOTE: memory requirements per core due to psi -- in GB    8.0080003E-02
+ 
+  For atom type             1  intgrl[(-Z/r-vloc(r))d3r] =  
+   0.6491855891731311     
+  For atom type             2  intgrl[(-Z/r-vloc(r))d3r] =  
+    2.673238861719250     
+  shift due to pseudopotential    5.0388057655583246E-003
+  segment width           153
+ 
+  <phi|H|phi> computed from orbital from file:   -0.1680485    
+                      vs. eorb read from file:   -0.1680551    
+ 
+ 
+  ############ HAMILTONIAN INFO: ############ 
+ 
+  hmin       =      -0.71547168
+  hmax       =      25.01449776
+  dh scaling =       1.04999995
+  dh         =      13.50823402
+  havg       =      12.14951324
+  nchbmx     =             1800
+  -> Temperature-dependent Heaviside filtering will be used
+     to prepare the occupied stochastic states
+
+  Time:  preparation     2.218767    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=          8 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          1
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+             8      -0.432079       0.006537          MC, <X>            +-stat.err
+             8      -0.031196       0.014611          MC, Sig_R(e_qp)    +-stat.err
+             8      -0.026455       0.013779          MC, Sig_R(e_ks)    +-stat.err
+             8       0.001042       0.001282          MC, Sig_I(e_ks)    +-stat.err
+             8       0.848624                         MC, Z             
+             8      -0.141223                         MC, Elin          
+             8      -0.141179       0.014611          MC, E_qp           +-stat.err
+             8       0.000523       0.000732          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             1 => time:     4.415217    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         16 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          2
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            16      -0.433695       0.007431          MC, <X>            +-stat.err
+            16      -0.036367       0.013084          MC, Sig_R(e_qp)    +-stat.err
+            16      -0.032296       0.011653          MC, Sig_R(e_ks)    +-stat.err
+            16      -0.000850       0.002206          MC, Sig_I(e_ks)    +-stat.err
+            16       0.830788                         MC, Z             
+            16      -0.147982                         MC, Elin          
+            16      -0.147965       0.013084          MC, E_qp           +-stat.err
+            16      -0.000692       0.001496          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             2 => time:     6.506904    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         24 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          3
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            24      -0.432037       0.005498          MC, <X>            +-stat.err
+            24      -0.029966       0.010910          MC, Sig_R(e_qp)    +-stat.err
+            24      -0.024190       0.010096          MC, Sig_R(e_ks)    +-stat.err
+            24      -0.001307       0.001737          MC, Sig_I(e_ks)    +-stat.err
+            24       0.826988                         MC, Z             
+            24      -0.139999                         MC, Elin          
+            24      -0.139907       0.010910          MC, E_qp           +-stat.err
+            24      -0.000802       0.000987          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             3 => time:     8.593149    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         32 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          4
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            32      -0.434559       0.005176          MC, <X>            +-stat.err
+            32      -0.042174       0.011031          MC, Sig_R(e_qp)    +-stat.err
+            32      -0.039194       0.010209          MC, Sig_R(e_ks)    +-stat.err
+            32      -0.001880       0.001546          MC, Sig_I(e_ks)    +-stat.err
+            32       0.818174                         MC, Z             
+            32      -0.154637                         MC, Elin          
+            32      -0.154637       0.011031          MC, E_qp           +-stat.err
+            32      -0.001521       0.001206          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             4 => time:     10.64666    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         40 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          5
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            40      -0.437390       0.004932          MC, <X>            +-stat.err
+            40      -0.034539       0.010567          MC, Sig_R(e_qp)    +-stat.err
+            40      -0.030460       0.009831          MC, Sig_R(e_ks)    +-stat.err
+            40      -0.001392       0.001310          MC, Sig_I(e_ks)    +-stat.err
+            40       0.815894                         MC, Z             
+            40      -0.149859                         MC, Elin          
+            40      -0.149833       0.010567          MC, E_qp           +-stat.err
+            40      -0.000996       0.000934          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             5 => time:     12.69860    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         48 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          6
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            48      -0.435726       0.004421          MC, <X>            +-stat.err
+            48      -0.034610       0.009078          MC, Sig_R(e_qp)    +-stat.err
+            48      -0.030049       0.008402          MC, Sig_R(e_ks)    +-stat.err
+            48      -0.000964       0.001133          MC, Sig_I(e_ks)    +-stat.err
+            48       0.811497                         MC, Z             
+            48      -0.148273                         MC, Elin          
+            48      -0.148240       0.009078          MC, E_qp           +-stat.err
+            48      -0.000695       0.000781          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             6 => time:     14.74781    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         56 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          7
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            56      -0.433280       0.004133          MC, <X>            +-stat.err
+            56      -0.036947       0.008475          MC, Sig_R(e_qp)    +-stat.err
+            56      -0.032537       0.007849          MC, Sig_R(e_ks)    +-stat.err
+            56      -0.000293       0.001048          MC, Sig_I(e_ks)    +-stat.err
+            56       0.817692                         MC, Z             
+            56      -0.148156                         MC, Elin          
+            56      -0.148131       0.008475          MC, E_qp           +-stat.err
+            56      -0.000228       0.000719          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             7 => time:     16.79704    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         64 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          8
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            64      -0.432608       0.003753          MC, <X>            +-stat.err
+            64      -0.035884       0.008342          MC, Sig_R(e_qp)    +-stat.err
+            64      -0.031071       0.007830          MC, Sig_R(e_ks)    +-stat.err
+            64       0.000101       0.000951          MC, Sig_I(e_ks)    +-stat.err
+            64       0.816895                         MC, Z             
+            64      -0.146429                         MC, Elin          
+            64      -0.146396       0.008342          MC, E_qp           +-stat.err
+            64       0.000042       0.000628          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             8 => time:     18.84417    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         72 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=          9
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            72      -0.431770       0.003418          MC, <X>            +-stat.err
+            72      -0.033332       0.008599          MC, Sig_R(e_qp)    +-stat.err
+            72      -0.027328       0.008235          MC, Sig_R(e_ks)    +-stat.err
+            72       0.000236       0.000865          MC, Sig_I(e_ks)    +-stat.err
+            72       0.804852                         MC, Z             
+            72      -0.143061                         MC, Elin          
+            72      -0.143005       0.008599          MC, E_qp           +-stat.err
+            72       0.000093       0.000529          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:             9 => time:     20.89632    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         80 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         10
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            80      -0.431553       0.003317          MC, <X>            +-stat.err
+            80      -0.030405       0.008001          MC, Sig_R(e_qp)    +-stat.err
+            80      -0.023812       0.007624          MC, Sig_R(e_ks)    +-stat.err
+            80      -0.000092       0.000874          MC, Sig_I(e_ks)    +-stat.err
+            80       0.808381                         MC, Z             
+            80      -0.139933                         MC, Elin          
+            80      -0.139861       0.008001          MC, E_qp           +-stat.err
+            80      -0.000056       0.000483          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            10 => time:     22.94861    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         88 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         11
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            88      -0.431603       0.003116          MC, <X>            +-stat.err
+            88      -0.031353       0.007437          MC, Sig_R(e_qp)    +-stat.err
+            88      -0.025158       0.007065          MC, Sig_R(e_ks)    +-stat.err
+            88      -0.000016       0.000801          MC, Sig_I(e_ks)    +-stat.err
+            88       0.812415                         MC, Z             
+            88      -0.140927                         MC, Elin          
+            88      -0.140861       0.007437          MC, E_qp           +-stat.err
+            88      -0.000018       0.000455          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            11 => time:     24.99862    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=         96 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         12
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+            96      -0.432076       0.002930          MC, <X>            +-stat.err
+            96      -0.029126       0.007242          MC, Sig_R(e_qp)    +-stat.err
+            96      -0.022500       0.006939          MC, Sig_R(e_ks)    +-stat.err
+            96       0.000427       0.000795          MC, Sig_I(e_ks)    +-stat.err
+            96       0.811889                         MC, Z             
+            96      -0.139171                         MC, Elin          
+            96      -0.139107       0.007242          MC, E_qp           +-stat.err
+            96       0.000231       0.000436          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            12 => time:     27.05365    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        104 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         13
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           104      -0.432941       0.002775          MC, <X>            +-stat.err
+           104      -0.030132       0.006859          MC, Sig_R(e_qp)    +-stat.err
+           104      -0.024023       0.006565          MC, Sig_R(e_ks)    +-stat.err
+           104       0.000336       0.000791          MC, Sig_I(e_ks)    +-stat.err
+           104       0.814248                         MC, Z             
+           104      -0.141031                         MC, Elin          
+           104      -0.140978       0.006859          MC, E_qp           +-stat.err
+           104       0.000200       0.000457          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            13 => time:     29.10978    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        112 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         14
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           112      -0.434886       0.002730          MC, <X>            +-stat.err
+           112      -0.028855       0.006619          MC, Sig_R(e_qp)    +-stat.err
+           112      -0.022900       0.006333          MC, Sig_R(e_ks)    +-stat.err
+           112       0.000371       0.000746          MC, Sig_I(e_ks)    +-stat.err
+           112       0.814251                         MC, Z             
+           112      -0.141700                         MC, Elin          
+           112      -0.141644       0.006619          MC, E_qp           +-stat.err
+           112       0.000199       0.000437          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            14 => time:     31.15876    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        120 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         15
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           120      -0.434211       0.002616          MC, <X>            +-stat.err
+           120      -0.029152       0.006465          MC, Sig_R(e_qp)    +-stat.err
+           120      -0.023068       0.006192          MC, Sig_R(e_ks)    +-stat.err
+           120       0.000191       0.000746          MC, Sig_I(e_ks)    +-stat.err
+           120       0.813026                         MC, Z             
+           120      -0.141329                         MC, Elin          
+           120      -0.141267       0.006465          MC, E_qp           +-stat.err
+           120       0.000083       0.000434          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            15 => time:     33.20470    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        128 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         16
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           128      -0.433773       0.002563          MC, <X>            +-stat.err
+           128      -0.029166       0.006138          MC, Sig_R(e_qp)    +-stat.err
+           128      -0.023093       0.005862          MC, Sig_R(e_ks)    +-stat.err
+           128       0.000132       0.000710          MC, Sig_I(e_ks)    +-stat.err
+           128       0.815539                         MC, Z             
+           128      -0.140909                         MC, Elin          
+           128      -0.140843       0.006138          MC, E_qp           +-stat.err
+           128       0.000054       0.000409          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            16 => time:     35.25654    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        136 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         17
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           136      -0.434011       0.002537          MC, <X>            +-stat.err
+           136      -0.028692       0.005916          MC, Sig_R(e_qp)    +-stat.err
+           136      -0.022529       0.005631          MC, Sig_R(e_ks)    +-stat.err
+           136       0.000154       0.000690          MC, Sig_I(e_ks)    +-stat.err
+           136       0.814589                         MC, Z             
+           136      -0.140675                         MC, Elin          
+           136      -0.140606       0.005916          MC, E_qp           +-stat.err
+           136       0.000070       0.000395          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            17 => time:     37.30719    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        144 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         18
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           144      -0.434136       0.002498          MC, <X>            +-stat.err
+           144      -0.029042       0.005900          MC, Sig_R(e_qp)    +-stat.err
+           144      -0.022982       0.005615          MC, Sig_R(e_ks)    +-stat.err
+           144       0.000020       0.000665          MC, Sig_I(e_ks)    +-stat.err
+           144       0.814420                         MC, Z             
+           144      -0.141152                         MC, Elin          
+           144      -0.141082       0.005900          MC, E_qp           +-stat.err
+           144      -0.000011       0.000386          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            18 => time:     39.36427    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        152 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         19
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           152      -0.434336       0.002448          MC, <X>            +-stat.err
+           152      -0.031051       0.005765          MC, Sig_R(e_qp)    +-stat.err
+           152      -0.025510       0.005479          MC, Sig_R(e_ks)    +-stat.err
+           152      -0.000229       0.000653          MC, Sig_I(e_ks)    +-stat.err
+           152       0.815098                         MC, Z             
+           152      -0.143353                         MC, Elin          
+           152      -0.143291       0.005765          MC, E_qp           +-stat.err
+           152      -0.000171       0.000399          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            19 => time:     41.41452    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        160 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         20
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           160      -0.433794       0.002361          MC, <X>            +-stat.err
+           160      -0.033035       0.005636          MC, Sig_R(e_qp)    +-stat.err
+           160      -0.027851       0.005359          MC, Sig_R(e_ks)    +-stat.err
+           160      -0.000262       0.000628          MC, Sig_I(e_ks)    +-stat.err
+           160       0.816204                         MC, Z             
+           160      -0.144787                         MC, Elin          
+           160      -0.144733       0.005636          MC, E_qp           +-stat.err
+           160      -0.000203       0.000396          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            20 => time:     43.46869    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        168 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         21
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           168      -0.433553       0.002311          MC, <X>            +-stat.err
+           168      -0.033919       0.005568          MC, Sig_R(e_qp)    +-stat.err
+           168      -0.028925       0.005266          MC, Sig_R(e_ks)    +-stat.err
+           168      -0.000095       0.000605          MC, Sig_I(e_ks)    +-stat.err
+           168       0.818136                         MC, Z             
+           168      -0.145414                         MC, Elin          
+           168      -0.145376       0.005568          MC, E_qp           +-stat.err
+           168      -0.000070       0.000393          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            21 => time:     45.51973    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        176 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         22
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           176      -0.434066       0.002278          MC, <X>            +-stat.err
+           176      -0.034894       0.005406          MC, Sig_R(e_qp)    +-stat.err
+           176      -0.030260       0.005099          MC, Sig_R(e_ks)    +-stat.err
+           176      -0.000096       0.000589          MC, Sig_I(e_ks)    +-stat.err
+           176       0.819333                         MC, Z             
+           176      -0.146895                         MC, Elin          
+           176      -0.146865       0.005406          MC, E_qp           +-stat.err
+           176      -0.000074       0.000394          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            22 => time:     47.56765    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        184 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         23
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           184      -0.434225       0.002229          MC, <X>            +-stat.err
+           184      -0.033870       0.005421          MC, Sig_R(e_qp)    +-stat.err
+           184      -0.028944       0.005139          MC, Sig_R(e_ks)    +-stat.err
+           184       0.000131       0.000682          MC, Sig_I(e_ks)    +-stat.err
+           184       0.816180                         MC, Z             
+           184      -0.146031                         MC, Elin          
+           184      -0.145999       0.005421          MC, E_qp           +-stat.err
+           184       0.000067       0.000450          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            23 => time:     49.61579    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        192 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         24
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           192      -0.434504       0.002204          MC, <X>            +-stat.err
+           192      -0.035365       0.005298          MC, Sig_R(e_qp)    +-stat.err
+           192      -0.030835       0.005014          MC, Sig_R(e_ks)    +-stat.err
+           192       0.000124       0.000659          MC, Sig_I(e_ks)    +-stat.err
+           192       0.816453                         MC, Z             
+           192      -0.147796                         MC, Elin          
+           192      -0.147773       0.005298          MC, E_qp           +-stat.err
+           192       0.000069       0.000450          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            24 => time:     51.67130    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        200 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         25
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           200      -0.433465       0.002229          MC, <X>            +-stat.err
+           200      -0.035743       0.005131          MC, Sig_R(e_qp)    +-stat.err
+           200      -0.031117       0.004825          MC, Sig_R(e_ks)    +-stat.err
+           200       0.000057       0.000634          MC, Sig_I(e_ks)    +-stat.err
+           200       0.817998                         MC, Z             
+           200      -0.147139                         MC, Elin          
+           200      -0.147111       0.005131          MC, E_qp           +-stat.err
+           200       0.000022       0.000428          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            25 => time:     53.71946    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        208 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         26
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           208      -0.433397       0.002183          MC, <X>            +-stat.err
+           208      -0.035988       0.005016          MC, Sig_R(e_qp)    +-stat.err
+           208      -0.031371       0.004714          MC, Sig_R(e_ks)    +-stat.err
+           208      -0.000006       0.000621          MC, Sig_I(e_ks)    +-stat.err
+           208       0.816982                         MC, Z             
+           208      -0.147317                         MC, Elin          
+           208      -0.147289       0.005016          MC, E_qp           +-stat.err
+           208      -0.000020       0.000420          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            26 => time:     55.77893    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        216 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         27
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           216      -0.433551       0.002123          MC, <X>            +-stat.err
+           216      -0.036560       0.005199          MC, Sig_R(e_qp)    +-stat.err
+           216      -0.032011       0.004927          MC, Sig_R(e_ks)    +-stat.err
+           216       0.000076       0.000609          MC, Sig_I(e_ks)    +-stat.err
+           216       0.813924                         MC, Z             
+           216      -0.148040                         MC, Elin          
+           216      -0.148016       0.005199          MC, E_qp           +-stat.err
+           216       0.000026       0.000419          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            27 => time:     57.83849    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        224 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         28
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           224      -0.434239       0.002079          MC, <X>            +-stat.err
+           224      -0.037157       0.005084          MC, Sig_R(e_qp)    +-stat.err
+           224      -0.032929       0.004817          MC, Sig_R(e_ks)    +-stat.err
+           224       0.000104       0.000588          MC, Sig_I(e_ks)    +-stat.err
+           224       0.815173                         MC, Z             
+           224      -0.149318                         MC, Elin          
+           224      -0.149299       0.005084          MC, E_qp           +-stat.err
+           224       0.000044       0.000414          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            28 => time:     59.89618    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        232 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         29
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           232      -0.434565       0.002065          MC, <X>            +-stat.err
+           232      -0.037723       0.004960          MC, Sig_R(e_qp)    +-stat.err
+           232      -0.033696       0.004690          MC, Sig_R(e_ks)    +-stat.err
+           232      -0.000045       0.000577          MC, Sig_I(e_ks)    +-stat.err
+           232       0.815269                         MC, Z             
+           232      -0.150207                         MC, Elin          
+           232      -0.150191       0.004960          MC, E_qp           +-stat.err
+           232      -0.000064       0.000414          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            29 => time:     61.95843    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        240 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         30
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           240      -0.434270       0.002033          MC, <X>            +-stat.err
+           240      -0.038296       0.004852          MC, Sig_R(e_qp)    +-stat.err
+           240      -0.034366       0.004584          MC, Sig_R(e_ks)    +-stat.err
+           240      -0.000191       0.000565          MC, Sig_I(e_ks)    +-stat.err
+           240       0.816590                         MC, Z             
+           240      -0.150485                         MC, Elin          
+           240      -0.150470       0.004852          MC, E_qp           +-stat.err
+           240      -0.000168       0.000408          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            30 => time:     64.02714    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        248 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         31
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           248      -0.434837       0.002030          MC, <X>            +-stat.err
+           248      -0.038468       0.004749          MC, Sig_R(e_qp)    +-stat.err
+           248      -0.034712       0.004473          MC, Sig_R(e_ks)    +-stat.err
+           248      -0.000244       0.000552          MC, Sig_I(e_ks)    +-stat.err
+           248       0.817085                         MC, Z             
+           248      -0.151220                         MC, Elin          
+           248      -0.151208       0.004749          MC, E_qp           +-stat.err
+           248      -0.000212       0.000404          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            31 => time:     66.09261    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        256 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         32
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           256      -0.434966       0.001978          MC, <X>            +-stat.err
+           256      -0.038229       0.004665          MC, Sig_R(e_qp)    +-stat.err
+           256      -0.034427       0.004401          MC, Sig_R(e_ks)    +-stat.err
+           256      -0.000128       0.000540          MC, Sig_I(e_ks)    +-stat.err
+           256       0.816205                         MC, Z             
+           256      -0.151111                         MC, Elin          
+           256      -0.151099       0.004665          MC, E_qp           +-stat.err
+           256      -0.000132       0.000394          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            32 => time:     68.14186    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        320 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         40
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           320      -0.437665       0.001811          MC, <X>            +-stat.err
+           320      -0.035653       0.004052          MC, Sig_R(e_qp)    +-stat.err
+           320      -0.031867       0.003803          MC, Sig_R(e_ks)    +-stat.err
+           320      -0.000460       0.000491          MC, Sig_I(e_ks)    +-stat.err
+           320       0.815682                         MC, Z             
+           320      -0.151236                         MC, Elin          
+           320      -0.151223       0.004052          MC, E_qp           +-stat.err
+           320      -0.000373       0.000358          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            40 => time:     84.45934    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        384 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         48
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           384      -0.438110       0.001630          MC, <X>            +-stat.err
+           384      -0.036744       0.003735          MC, Sig_R(e_qp)    +-stat.err
+           384      -0.033302       0.003516          MC, Sig_R(e_ks)    +-stat.err
+           384      -0.000149       0.000440          MC, Sig_I(e_ks)    +-stat.err
+           384       0.816109                         MC, Z             
+           384      -0.152761                         MC, Elin          
+           384      -0.152757       0.003735          MC, E_qp           +-stat.err
+           384      -0.000146       0.000329          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            48 => time:     100.8266    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        448 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         56
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           448      -0.438692       0.001544          MC, <X>            +-stat.err
+           448      -0.036938       0.003473          MC, Sig_R(e_qp)    +-stat.err
+           448      -0.033657       0.003261          MC, Sig_R(e_ks)    +-stat.err
+           448      -0.000019       0.000389          MC, Sig_I(e_ks)    +-stat.err
+           448       0.815612                         MC, Z             
+           448      -0.153535                         MC, Elin          
+           448      -0.153535       0.003473          MC, E_qp           +-stat.err
+           448      -0.000052       0.000295          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            56 => time:     117.1661    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        512 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         64
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           512      -0.439173       0.001423          MC, <X>            +-stat.err
+           512      -0.037084       0.003262          MC, Sig_R(e_qp)    +-stat.err
+           512      -0.033970       0.003069          MC, Sig_R(e_ks)    +-stat.err
+           512       0.000045       0.000362          MC, Sig_I(e_ks)    +-stat.err
+           512       0.816866                         MC, Z             
+           512      -0.154161                         MC, Elin          
+           512      -0.154161       0.003262          MC, E_qp           +-stat.err
+           512       0.000009       0.000278          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            64 => time:     133.4980    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        576 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         72
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           576      -0.438690       0.001357          MC, <X>            +-stat.err
+           576      -0.037455       0.003136          MC, Sig_R(e_qp)    +-stat.err
+           576      -0.034291       0.002958          MC, Sig_R(e_ks)    +-stat.err
+           576       0.000128       0.000343          MC, Sig_I(e_ks)    +-stat.err
+           576       0.815668                         MC, Z             
+           576      -0.154048                         MC, Elin          
+           576      -0.154048       0.003136          MC, E_qp           +-stat.err
+           576       0.000068       0.000263          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            72 => time:     149.8154    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        640 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         80
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           640      -0.438359       0.001299          MC, <X>            +-stat.err
+           640      -0.037373       0.002994          MC, Sig_R(e_qp)    +-stat.err
+           640      -0.034104       0.002825          MC, Sig_R(e_ks)    +-stat.err
+           640       0.000084       0.000317          MC, Sig_I(e_ks)    +-stat.err
+           640       0.815142                         MC, Z             
+           640      -0.153636                         MC, Elin          
+           640      -0.153636       0.002994          MC, E_qp           +-stat.err
+           640       0.000029       0.000241          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            80 => time:     166.1895    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        704 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         88
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           704      -0.438089       0.001243          MC, <X>            +-stat.err
+           704      -0.038220       0.002885          MC, Sig_R(e_qp)    +-stat.err
+           704      -0.035098       0.002722          MC, Sig_R(e_ks)    +-stat.err
+           704       0.000069       0.000304          MC, Sig_I(e_ks)    +-stat.err
+           704       0.815871                         MC, Z             
+           704      -0.154213                         MC, Elin          
+           704      -0.154213       0.002885          MC, E_qp           +-stat.err
+           704       0.000020       0.000234          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            88 => time:     182.5314    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        768 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=         96
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           768      -0.437683       0.001195          MC, <X>            +-stat.err
+           768      -0.038530       0.002790          MC, Sig_R(e_qp)    +-stat.err
+           768      -0.035355       0.002636          MC, Sig_R(e_ks)    +-stat.err
+           768       0.000051       0.000292          MC, Sig_I(e_ks)    +-stat.err
+           768       0.814385                         MC, Z             
+           768      -0.154117                         MC, Elin          
+           768      -0.154117       0.002790          MC, E_qp           +-stat.err
+           768       0.000005       0.000224          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:            96 => time:     198.9295    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        832 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        104
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           832      -0.437255       0.001146          MC, <X>            +-stat.err
+           832      -0.038189       0.002715          MC, Sig_R(e_qp)    +-stat.err
+           832      -0.034844       0.002573          MC, Sig_R(e_ks)    +-stat.err
+           832       0.000153       0.000287          MC, Sig_I(e_ks)    +-stat.err
+           832       0.814651                         MC, Z             
+           832      -0.153348                         MC, Elin          
+           832      -0.153348       0.002715          MC, E_qp           +-stat.err
+           832       0.000084       0.000217          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           104 => time:     215.2582    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        896 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        112
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           896      -0.437073       0.001098          MC, <X>            +-stat.err
+           896      -0.038532       0.002583          MC, Sig_R(e_qp)    +-stat.err
+           896      -0.035273       0.002444          MC, Sig_R(e_ks)    +-stat.err
+           896       0.000155       0.000271          MC, Sig_I(e_ks)    +-stat.err
+           896       0.816880                         MC, Z             
+           896      -0.153509                         MC, Elin          
+           896      -0.153509       0.002583          MC, E_qp           +-stat.err
+           896       0.000093       0.000205          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           112 => time:     231.6004    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=        960 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        120
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+           960      -0.437163       0.001061          MC, <X>            +-stat.err
+           960      -0.039163       0.002508          MC, Sig_R(e_qp)    +-stat.err
+           960      -0.036068       0.002374          MC, Sig_R(e_ks)    +-stat.err
+           960       0.000130       0.000258          MC, Sig_I(e_ks)    +-stat.err
+           960       0.817009                         MC, Z             
+           960      -0.154230                         MC, Elin          
+           960      -0.154230       0.002508          MC, E_qp           +-stat.err
+           960       0.000075       0.000198          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           120 => time:     247.9402    
+ 
+ ######## Accumulative # of Monte Carlo steps :  MC=       1000 ######## 
+ Completed Monte Carlo steps in each core : MC_STEP=        125
+ 
+ 
+                    -0.168049                         E                 
+                    -0.490145                         <V>               
+          1000      -0.436721       0.001050          MC, <X>            +-stat.err
+          1000      -0.039084       0.002442          MC, Sig_R(e_qp)    +-stat.err
+          1000      -0.035880       0.002307          MC, Sig_R(e_ks)    +-stat.err
+          1000       0.000103       0.000251          MC, Sig_I(e_ks)    +-stat.err
+          1000       0.817351                         MC, Z             
+          1000      -0.153709                         MC, Elin          
+          1000      -0.153709       0.002442          MC, E_qp           +-stat.err
+          1000       0.000056       0.000191          MC, Ei_qp          +-stat.err
+ 
+  Time:  MC_STEP:           125 => time:     258.1388    
+  Time:  program end     258.1389    

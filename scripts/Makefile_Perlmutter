@@ -1,0 +1,96 @@
+#######################################################################
+##### Edit this section as appropriate for your build environment #####
+#######################################################################
+#
+# On NERSC Perlmutter:
+# -For GPU build:
+# module swap PrgEnv-gnu PrgEnv-nvidia && module load cray-fftw
+# -For CPU build:
+# module swap PrgEnv-nvidia PrgEnv-gnu && module load cray-fftw
+# Then select appropriate preprocessor options below
+
+### Select Preprocessor options
+
+# Build for GPUs using NVHPC or for CPUs using GNU
+USEGPU = yes
+# LIBXC (optional, required to use functionals other than PW-LDA)
+USELIBXC = yes
+
+### Compiler options
+
+FCMPI = ftn
+MPIFLG = -DMPI -O3
+
+### Paths to libraries
+
+# FFTW (required)
+FFTPATH = -L ${FFTW_DIR} -lfftw3
+
+# GPU libraries (required for GPU execution)
+CUFLG = -lcudart
+CULIB = -L$(NVIDIA_PATH)/math_libs/lib64 -lcufft
+
+#######################################################################
+
+# Process flags
+LIBS = $(FFTPATH)
+
+USEGPU := $(strip ${USEGPU})
+GPU_FILES=
+ifeq (${USEGPU},yes)
+   LIBS += $(CUFLG) $(CULIB)
+   FCMPI += -cuda -acc=gpu -fast -Minfo=accel -DGPU_ENABLED=1
+   PREPROCFLG = -Mpreprocess
+   GPU_FILES += gpu/*.f90
+   EXENAME = sgw_gpu
+   LIBXC_PATH = -I/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/include -L/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-gpu/lib -lxcf03 -lxc
+else
+   FCMPI += -DGPU_ENABLED=0
+   PREPROCFLG = -fallow-argument-mismatch -cpp
+   EXENAME = sgw_cpu
+   LIBXC_PATH = -I/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-cpu/include -L/global/common/software/nersc/pm-2021q4/sw/libxc/v5.2.2/pm-cpu/lib -lxcf03 -lxc
+endif
+
+USELIBXC := $(strip ${USELIBXC})
+XC_FILES=
+ifeq (${USELIBXC},yes)
+    LIBS += $(LIBXC_PATH)
+    FCMPI += -DLIBXC_ENABLED=1
+    XC_FILES += XCI/*.f90
+else
+    FCMPI += -DLIBXC_ENABLED=0
+endif
+
+FCMPI += ${PREPROCFLG}
+EXENAME := $(strip ${EXENAME})
+
+# compile
+all :  clean sgw clnomod 
+
+sgw: simmpi gwm atoms kbtop ppm kbmod
+	$(FCMPI) $(MPIFLG) -o ${EXENAME}.x kb/*f90 libgw/*f libgw/*f90 $(GPU_FILES) *f90 $(XC_FILES) $(LIBS)
+
+simmpi:
+	$(FCMPI) $(MPIFLG) -c ./libgw/0_library_mpi_module.f90 ./libgw/0_simple_mpi.f90
+
+gwm:
+	$(FCMPI) $(MPIFLG) -c 1_gwm.f90
+
+atoms:
+	$(FCMPI) $(MPIFLG) -c 2_atoms.f90
+
+kbtop:
+	$(FCMPI) $(MPIFLG) -c 2_kb_top_module.f90
+
+ppm:
+	$(FCMPI) $(MPIFLG) -c 3_ppm.f90
+
+kbmod:
+	$(FCMPI) $(MPIFLG) -c kb/1_kb_mod.f90
+
+clnomod:
+	rm -rf *o *mod kb/*o libgw/*o 
+
+clean:
+	rm -rf *o *mod kb/*o libgw/*o ${EXENAME}.x 
+
