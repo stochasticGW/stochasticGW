@@ -166,7 +166,7 @@ subroutine read_upf(fname,znum,valnum)
   character(50)     :: fname
   character(2)      :: name 
   character(80)     :: str1,str2
-  character(500)    :: full
+  character(500)    :: full,f2
   integer           :: ir,znum,lmax,lloc,sz,lngth,st,licn,il,ipt,valnum
   integer           :: ma
   integer           :: iread
@@ -175,7 +175,7 @@ subroutine read_upf(fname,znum,valnum)
   real*8,allocatable:: phi(:,:)
   real*8,allocatable:: vl_rd(:,:)
   real*8,allocatable:: vloc_rd(:)
-  real*8            :: test, pi
+  real*8            :: test, pi, r_valnum
 
   pi = dacos(-1d0)
 
@@ -209,8 +209,15 @@ subroutine read_upf(fname,znum,valnum)
         endif
         call elname(name,znum) 
         write(17,*) "element:",name,znum
-    case("z_valence")
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
+     case("z_valence")
+!        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
+        write(f2,'(A)')str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)
+        read(f2,*) r_valnum
+        valnum = nint(r_valnum) ! integer
+        if(abs(valnum-r_valnum)>1d-4)then;
+           write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
+           stop
+        endif
         write(17,*) "valence:",valnum
      case("l_max")
         if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
