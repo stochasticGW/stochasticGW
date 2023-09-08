@@ -18,20 +18,18 @@ module kb_mod
   use kb_top_module, only : ng=>n, nx, ny, nz, dx, dy, dz, dv
   use kb_top_module, only : na, lmx, scale_vh, dim_periodic
   use kb_top_module, only : vloc_tot
-  use ppm,           only : nrpp, rrpp, lpptop, lpploc, vlpp, vpploc, phipp, vphipp
+  use ppm,           only : nrpp, rrpp, lpptop, lpploc, vlpp, vpploc, phipp !, vphipp
+  use ppm,           only : nproj_m, lpp_m, phipp_m, nsuper_ianl, indx_ianl, start_ianl
+  use ppm,           only : vp_hamann, dij_diag_m
   implicit none
   save
   integer                  :: st
   integer                  :: ngsmall
   integer                  :: iumx
   integer, allocatable     :: ngs(:)
-  integer, allocatable     :: iub(:)
-  integer, allocatable     :: iut(:)
   integer, allocatable     :: mapkbg(:,:)
   real*8,  allocatable     :: rgn(:,:,:)
   real*8, allocatable      :: racut_a(:)
-  real*8, allocatable      :: vp(:)
-  real*8, allocatable      :: pvp(        :,:)
   complex*16, allocatable  :: cvn(:,:,:)       ! for formafactor
   complex*16, allocatable  :: cvkb(:,:,:)      ! for formafactor.  Really real
 end module kb_mod

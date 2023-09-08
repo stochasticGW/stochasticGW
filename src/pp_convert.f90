@@ -158,15 +158,18 @@ subroutine read_fhi(fname,znum,valnum)
 end subroutine read_fhi
 
 subroutine read_upf(fname,znum,valnum)
-  use ppm, only : lmx
+  use ppm, only : lmx, matop
   use ppm, only : nrpp, nrppmx, lpploc, lpptop
   use ppm, only : rrpp, vpploc, vlpp, phipp, vpploc, rho_core_a, core_correction
+!!! PTMOD add Hamann
+  use ppm, only : dij_diag_m, phipp_m, lpp_m, nproj_m
+!!!
   implicit none
-  integer           :: i
+  integer           :: i,ii,i1,i2,in,np
   character(50)     :: fname
   character(2)      :: name 
   character(80)     :: str1,str2
-  character(500)    :: full
+  character(500)    :: full,f2,tmp
   integer           :: ir,znum,lmax,lloc,sz,lngth,st,licn,il,ipt,valnum
   integer           :: ma
   integer           :: iread
@@ -175,7 +178,13 @@ subroutine read_upf(fname,znum,valnum)
   real*8,allocatable:: phi(:,:)
   real*8,allocatable:: vl_rd(:,:)
   real*8,allocatable:: vloc_rd(:)
-  real*8            :: test, pi
+!!! PTMOD Hamann addition
+  real*8 :: norm2
+  real*8, allocatable  :: dij_m(:,:),phi_m(:,:),nrmp(:),dr(:)
+!  real*8, allocatable  :: dij_diag_m(:,:),phipp_m(:,:,:)
+!  integer, allocatable :: lpp_m(:,:)
+!!!
+  real*8            :: test, pi, r_valnum
 
   pi = dacos(-1d0)
 
@@ -195,22 +204,28 @@ subroutine read_upf(fname,znum,valnum)
   header: do
      read(001,"(A)")full
      read(full,*)str1
-     if(index(full,"/>")/=0)  exit header
      str2=str1(1:scan(str1,'=')-1)
      call lower_the_case(str2)
      select case(trim(str2))
-     case("element")   ! Three possibilies, generically : " H", or "Si","H "
+     case("element")
         i=scan(full,'"')
         call check_le(i+2,len_trim(full),' i+2, len_trim(full) ')
         if(full(i+1:i+1)==' ') then ! " H"
            name=full(i+2:i+2)//' '
-        else                        ! "Si" or "H "
+        else                        ! Arbitrary
            name=full(i+1:i+2)
         endif
         call elname(name,znum) 
         write(17,*) "element:",name,znum
-    case("z_valence")
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
+     case("z_valence")
+!        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
+        write(f2,'(A)')str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)
+        read(f2,*) r_valnum
+        valnum = nint(r_valnum) ! integer
+        if(abs(valnum-r_valnum)>1d-4)then;
+           write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
+           stop
+        endif
         write(17,*) "valence:",valnum
      case("l_max")
         if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
@@ -250,7 +265,13 @@ subroutine read_upf(fname,znum,valnum)
         else
            stop ' core_correction ill defined, stopping '
         end if
+!!! PTMOD add Hamann
+     case("number_of_proj")
+        sz = len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))
+        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),sz,np)
+!!! END PTMOD
      end select
+     if(index(full,"/>")/=0)  exit header
   end do header
   call flush(17)
   !
@@ -280,7 +301,23 @@ subroutine read_upf(fname,znum,valnum)
   allocate(    vl_rd(lngth,0:lmax),stat=st); call check0(st,' vl_rd   ')
   allocate(  vloc_rd(lngth),       stat=st); call check0(st,' vloc_rd ')
   allocate(   rho_cr(lngth),       stat=st); call check0(st,' r_core  ')
+!!! PTMOD add Hamann
+  allocate(         dr(lngth),    stat=st); call check0(st,' dr        ')
+  allocate(      phi_m(lngth,np), stat=st); call check0(st,' phi_m     ')
+  allocate(      dij_m(np,np),    stat=st); call check0(st,' dij_m     ')
+  allocate(       nrmp(np),       stat=st); call check0(st,' nrmp      ')
+!  allocate(      lpp_m(20,matop), stat=st); call check0(st,' lpp_m     ') ! '20'= a tmp hack
+!  allocate( dij_diag_m(20,matop), stat=st); call check0(st,' dij_diag_m') ! '20'= a tmp hack
+!  allocate(    phipp_m(nrppmx,20,matop),stat=st); call check0(st,' phipp_m') ! '20'= a tmp hack
+!!! END PTMOD
+
   read(001,*) grd
+!!! PTMOD add Hamann
+  ! make dr
+  dr(1)      = grd(2)-grd(1)
+  dr(lngth)     = grd(lngth)-grd(lngth-1)
+  dr(2:lngth-1) = (grd(3:lngth)-grd(1:lngth-2))/2d0
+!!! END PTMOD
 
   core_correction(ma) = core_c
   if(core_c) then
@@ -323,6 +360,109 @@ subroutine read_upf(fname,znum,valnum)
      end if
   end do
 
+!!! PTMOD Hamann addition: add nonlocal part
+  !
+  !  Next: nonlocal part,
+  !
+  do
+     read(001,*) str1
+     if(str1=="<PP_NONLOCAL>") exit
+  end do
+
+  !
+  !  now need to read PP_BETA.1 ,  PP_BETA.2 , ... THEN: PP_DIJ ....
+  ! 
+
+  channeloop : do ii=1,np
+     ! read PP_BETA.  Header, angular momentum, and index
+     in = -1 ! index
+     il = -1 ! l
+     PP_Beta_header_search : do
+        read(001,'(A)') full
+        if(index(full,"<PP_BETA").ne.0) exit PP_Beta_header_search
+     end do PP_Beta_header_search
+
+     write(17,*) "Reading ichannel",ii
+     PP_BETA_next : do
+        i1 = index(full,"angular_momentum=")
+        if(i1/=0) then
+           write(f2,'(A)') full(i1+18:)
+           write(tmp,'(A)') f2(:index(f2,'"')-1)
+           read( tmp,*) il
+        endif
+
+        i1 = index(full," index")
+        if(i1/=0) then
+           write(f2,'(A)') full(i1+8:)
+           write(tmp,'(A)') f2(:index(f2,'"')-1)
+           read(tmp,*) in
+        end if
+
+        if(index(full,">").ne.0) exit PP_BETA_next
+        read(001,'(A)') full ! reading the next one
+     end do PP_BETA_next
+
+     ! now check that l and the index are correct. 
+     call check_lele(0,il,9,' 0-il-9 ')
+     call check(ii,in,' ii, in ')
+     lpp_m(in,ma)=il
+
+     ! read w.f.
+     read(001,*) phi_m(:,in)
+     !
+     ! print w.f. properties
+     write(17,*)' atom index=',ma,' index=',in
+     norm2 = sum(phi_m(:,in)**2*dr) !!! need dr
+     write(17,*)' <phi(:,in)|phi(:,in> ',norm2
+     if(abs(norm2-1d0)>1d-4) then
+        write(17,*)' potential problem:  in, l, <phi(:,in)|phi(:,in> ',in,il,norm2
+     endif
+     ! *grd**2 built within phi.
+
+     ! normalize phi
+     nrmp(in)=sqrt(norm2)
+     phi_m(:,in) = phi_m(:,in)/nrmp(in)
+
+     read(001,'(A)') full
+     if(index(full,'</PP_BETA')==0) then; write(6,*)' error , full=',full; stop
+     end if
+  end do channeloop
+
+  !
+  !  now read PP_DIJ
+  ! 
+
+  read(001,'(A)') full
+  if(index(full,'<PP_DIJ')==0) stop ' error, no PP_DIJ '
+
+  end_dij : if(index(full,'>')==0) then
+     loopend : do
+        read(001,'(A)') full
+        if(index(full,'>')/=0) exit loopend
+     end do loopend
+  end if end_dij
+
+  read(001,*)dij_m
+  write(17,*)' unnormalized dij(in Rydberg) ',dij_m
+
+  !
+  ! check diagonality, extract diagonal value.  
+  !
+  call check_le(np, size(dij_diag_m,1),' np, diag_diag ')
+
+  do i1=1,np
+     do i2=1,np
+        dij_m(i1,i2) = nrmp(i1)*nrmp(i2)* dij_m(i1,i2)  ! normalize
+        if(i1==i2) then;
+           dij_diag_m(i1,ma) = dij_m(i1,i1) / 2d0  ! Rydberg to Hartree
+        else
+           if(abs(dij_m(i1,i2))>1d-6) stop ' dij_m not diagonal '
+        end if
+     end do
+  end do
+  write(17,*)' normalized dij_diag ',dij_diag_m(:np,ma)
+!!! END PTMOD
+
   do 
      read(001,*) str1
      if(index(str1,"<PP_PSWFC>")/=0) exit
@@ -348,7 +488,9 @@ subroutine read_upf(fname,znum,valnum)
 
   lpptop(ma)=min(lmax,lmx)
   lpploc(ma)=lloc
-
+!!! PTMOD add Hamann
+  nproj_m( ma) = np
+!!!
   call check_le(lngth,nrppmx,' lngth nrppmx ')
 
   vpploc(    1:lngth,  ma) = vloc_rd(1:lngth)/2.d0               ! Rydberg to Hartree     
@@ -369,12 +511,30 @@ subroutine read_upf(fname,znum,valnum)
      end if
   end do lloop
 
+!!! PTMOD
+  phipp_m( 1:lngth,:,ma) = 0d0
+  do in=1,np
+     do ir=1,lngth
+        if(grd(ir)>1d-5) phipp_m(ir,in,ma) = phi_m(ir,in)/grd(ir)
+     enddo
+  end do
+!!! END PTMOD
+
   call flush(17)
   close(001)
   deallocate(grd)
   deallocate(phi)
   deallocate(vl_rd)
   deallocate(vloc_rd)
+!!! PTMOD add Hamann
+  deallocate(dr)
+  deallocate(phi_m)
+  deallocate(dij_m)
+  deallocate(nrmp)
+!  deallocate(lpp_m)
+!  deallocate(dij_diag_m)
+!  deallocate(phipp_m)
+!!! END PTMOD
 
 end subroutine read_upf
 

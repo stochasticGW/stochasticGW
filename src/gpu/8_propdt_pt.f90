@@ -17,10 +17,10 @@
 
   use gwm,    only : dv, dt, na, expnk
   use gwm,    only : map_sp => map_sp_pt
-  use kb_mod, only : vp, ngs, mapkbg
+  use kb_mod, only : ngs, mapkbg, vp_hamann, nsuper_ianl, indx_ianl, start_ianl
   use device_mem_module, only : pt0, expvks, qr, qi, nrmarray, cufft_plan
   use device_mem_module, only : device_setup, ffts_setup, propdtpt_setup
-  use device_mem_module, only : ovdev, ialj, jss, nbtt, nalj
+  use device_mem_module, only : ovdev
   implicit none
   integer, intent(in) :: n,ms
   logical, intent(in) :: short
@@ -31,8 +31,8 @@
 
   !$acc data present(pt0,expnk), &
   !$acc present(map_sp), &
-  !$acc present(ngs,vp,mapkbg), &
-  !$acc present(qr,qi,nrmarray,expvks,ovdev,ialj,jss,nbtt)
+  !$acc present(ngs,vp_hamann,mapkbg), &
+  !$acc present(qr,qi,nrmarray,expvks,ovdev,indx_ianl,start_ianl)
   
   call propl
   call propnl
@@ -123,7 +123,7 @@ contains
 
   subroutine propnl
     implicit none
-    integer :: i, igg, l, j, is, it, ia, nbt, jb, js
+    integer :: i, igg, l, j, is, it, ia
     real*8                  :: cer,cei
     complex*16, parameter   :: ci=(0d0,1d0)
     complex*16              :: ce
@@ -142,19 +142,17 @@ contains
        end do
     end do
 
-    !$acc data present(ovdev,ialj,nbtt,jss,vp) 
+    !$acc data present(ovdev,vp_hamann,indx_ianl,start_ianl)
     !$acc parallel loop gang collapse(3) vector_length(160) async
     do i=1,2
        isloop : do is=1,ms
-          lloop: do l=1,nalj
-             ia=ialj(l)
-             nbt=nbtt(l)
-             js=jss(l)
+          lloop: do l=1,nsuper_ianl
+             ia = indx_ianl(l,1)
 
              ce=0d0
              !$acc loop vector reduction(+:ce)
              do igg=1,ngs(ia)
-                ce=ce+pt0(mapkbg(igg,ia),is,i)*vp(js+(igg-1)*nbt)
+                 ce=ce+pt0(mapkbg(igg,ia),is,i)*vp_hamann(start_ianl(l)+igg)
              enddo
              ce=ce*ovdev(l)
              cer=dble(ce)
@@ -163,11 +161,11 @@ contains
              !$acc loop vector
              do igg=1,ngs(ia)
                 it=mapkbg(igg,ia)
-                jb=js+(igg-1)*nbt
+                j=start_ianl(l)+igg
                 !$acc atomic
-                qr(it,is,i) = qr(it,is,i) + cer*vp(jb)
+                qr(it,is,i) = qr(it,is,i) + cer*vp_hamann(j)
                 !$acc atomic
-                qi(it,is,i) = qi(it,is,i) + cei*vp(jb)
+                qi(it,is,i) = qi(it,is,i) + cei*vp_hamann(j)
              end do
           end do lloop
        end do isloop

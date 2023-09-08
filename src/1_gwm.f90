@@ -21,6 +21,7 @@ module gwm
   real*8,     parameter :: tollocc = 1d-9
   real*8,     parameter :: tp_dns  = 1d-5
   integer,    parameter :: lngth_char=100
+  integer               :: nproj_max = 20 ! increase if needed.  Modify to determine by reading.
   character*30          :: method_exch
   character(lngth_char) :: inputfname='INPUT'
   character(lngth_char) :: work_dir    

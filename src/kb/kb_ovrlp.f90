@@ -17,7 +17,7 @@ subroutine kb_ovrlp
   use kb_mod, only     : mapat, racut_a, matop
   use kb_mod, only     : nrpp, lpptop, lpploc
   use kb_mod, only     : rr=>rrpp, vl=>vlpp, pl => phipp
-  use kb_mod, only     : pvp, vp
+!  use kb_mod, only     : pvp, vp
   implicit none
   integer  ma, l, mr, st  
   real*8,  allocatable :: dr(:)
@@ -57,8 +57,8 @@ subroutine kb_ovrlp
      do l=0,lpptop(ma)
         if(l/=lpploc(ma)) then
 
-           pvp(l,ma) =   &
-           sum( pl(1:mr,l,ma)**2*rr(1:mr,ma)**2*dr(1:mr)* vl(1:mr,l,ma)) ! no 4 pi--y0 integ.
+!           pvp(l,ma) =   &
+!           sum( pl(1:mr,l,ma)**2*rr(1:mr,ma)**2*dr(1:mr)* vl(1:mr,l,ma)) ! no 4 pi--y0 integ.
 
            if(rank==0) write(17,*)' ma, l, min pl, min rr, mindr, min vl '
            if(rank==0) write(17,*)ma,l,minval(pl(1:mr,l,ma)),minval(rr(1:mr,ma)),&
@@ -72,7 +72,7 @@ subroutine kb_ovrlp
      if(rank==0)write(17,*)' atom charge ',mapat(ma),' maximum grid index ',mr,' dist ',rr(mr,ma)
      do l=0,lpptop(ma)
         if(rank==0.and.l/=lpploc(ma)) &
-             write(17,*)' l,atom,cutoff,<p|v|p>',l,mapat(ma),racut_a(ma),pvp(l,ma)
+             write(17,*)' l,atom,cutoff',l,mapat(ma),racut_a(ma)!,pvp(l,ma)
      enddo
      if(rank==0) then
         write(17,*)

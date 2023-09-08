@@ -22,11 +22,18 @@ module ppm
   integer, allocatable :: nrpp(:)
   integer, allocatable :: lpptop(:)   
   integer, allocatable :: lpploc(:)
+!!! PTMOD add Hamann
+  integer, allocatable :: lpp_m(:,:), nproj_m(:)
+  integer, allocatable :: start_ianl(:), indx_ianl(:,:)
+  integer              :: nsuper_ianl
+  real*8, allocatable  :: dij_diag_m(:,:), phipp_m(:,:,:)
+  real*8, allocatable  :: vp_hamann(:)
+!!! END PTMOD
   real*8,  allocatable :: rrpp(:,:)
   real*8,  allocatable :: vpploc(:,:)
   real*8,  allocatable :: phipp(:,:,:)
   real*8,  allocatable :: vlpp(:,:,:)
-  real*8,  allocatable :: vphipp(:,:,:)
+!  real*8,  allocatable :: vphipp(:,:,:)
   real*8,  allocatable :: rho_core_a(:,:)
   logical, allocatable :: core_correction(:)
 
