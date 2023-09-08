@@ -14,7 +14,6 @@
 !                                                   
 subroutine pp_convert(fname,znum,valnum)
   use simple_mpi, only : rank
-  use ppm, only : lpptop
   implicit none
   character(50) :: fname
   character*3   :: b
@@ -33,137 +32,20 @@ subroutine pp_convert(fname,znum,valnum)
      select case(b)
      case('upf')
         call read_upf(fname,znum,valnum)
-     case('fhi')
-        call read_fhi(fname,znum,valnum)
      case default
-        stop "only fhi or upf format supported!"
+        stop "only upf format supported!"
      end select
 
      call flush(17)
   endif
 end subroutine pp_convert
 
-subroutine read_fhi(fname,znum,valnum)
-  use ppm, only : lmx
-  use ppm, only : nrpp, nrppmx, lpploc, lpptop
-  use ppm, only : rrpp, vlpp, phipp, vpploc
-  use ppm, only : rho_core_a, core_correction
-  implicit none
-  character(50)     :: fname
-  integer           :: ir, znum, dum, lmax, npt, lloc
-  integer           :: il, ipt,valnum
-  integer           :: ma, st
-  real*8,allocatable:: rho_cr(:)
-  real*4            :: rzn,rva
-  real*8            :: r8a, r8b, r8c, pi
-
-  pi = dacos(-1d0)
-
-  open(001,file='PP/'//trim(fname))
-  read(001,*)
-  read(001,*) rzn,rva
-  znum   = nint(rzn)
-  valnum = nint(rva)
-  call get_ma(znum,ma)
-  if(ma==0) then
-     close(001)
-     return
-  endif
-
-  read(001,*) dum,dum,lmax,lloc
-
-  write(17,*)' charge, valence, lmax, lloc ',znum,valnum,lmax,lloc
-  call flush(17)
-
-  if(lmax>3) then
-     write(6,*)' ERROR: value of lmax read from pp is: ',lmax,' higher than max allowed now, 3'
-     stop
-  endif
-
-  if(lmax<lloc) then
-     write(6,*)' ERROR: lmax, lloc read from pp are ',lmax,lloc
-     write(6,*)' & in fhi format we assume lmax.ge.lloc so change fhi file to have lmax=lloc.'
-     stop
-  endif
-
-  read(001,*) r8a, r8b
-  call get_ma(znum,ma)
-  !if(r8b==0.d0) then
-  if(abs(r8b)<1d-5) then
-    core_correction(ma) = .false.
-  else
-    core_correction(ma) = .true.
-    write(6,*) " For atom charge", znum," and internal index ",ma," a core correction is used!"
-    call flush(6)
-  end if
-
-  do ir = 1,14
-     read(001,*)
-  end do
-
-  nrpp(ma)=0
-  lloop : do il= 0,lmax  
-     read(001,*) npt,r8a
-     call check_le(npt,nrppmx,' npt nrppmx ')
-     
-     if(nrpp(ma)==0) then
-        nrpp(ma)=npt
-     else
-        call check(nrpp(ma),npt,' nrpp_ma, npt ')
-     end if
-     
-     do ipt = 1,npt
-        read(001,*) dum, r8a, r8b, r8c ; call check(ipt,dum,' ipt, dum ')
-
-        if(il==0) rrpp(ipt,ma)=r8a
-        if(il >0) call check_r(rrpp(ipt,ma),r8a,' rr_ipt_ma, r8a ')
-
-        if(il.le.lmx) then
-            phipp(ipt,il,ma) = r8b/rrpp(ipt,ma)  ! note, dividing phi by r.
-            vlpp( ipt,il,ma) = r8c               ! no Rydberg factor of half 
-        end if
-
-        if(il==lloc) then
-           vpploc(ipt, ma)  = r8c               ! no Rydberg factor of half
-        end if
-     end do
-  end do lloop
-  
-  lpptop(ma)=min(lmx,lmax)
-  lpploc(ma)=lloc
-
-  call get_ma(znum,ma)
-  rho_core_a(:,ma) = 0d0
-
-  if(core_correction(ma)) then
-     allocate(rho_cr(npt),stat=st)
-     if(st/=0) stop "Problem allocating rho_cr in FHI PP!"
-
-     do ipt = 1,npt
-        read(001,*) r8a, r8b
-        rho_cr(ipt) = r8b/(4.d0*pi)     !note factor of 1/4pi 
-     end do
-
-     if(npt.gt.size(rho_core_a,1)) stop "Problem with rho_core_a in FHI PP!"
-     if(rho_cr(npt).gt.1.D-10)     stop "Too hight core charge in FHI PP!"
-     rho_core_a(1:npt,ma) = rho_cr(1:npt)
-     deallocate(rho_cr)
-  end if
-
-  close(001)
-
-  write(17,*)' ma=atom_type, vpploc_min(for atom_type=ma) ',ma,minval(vpploc(1:nrpp(ma),ma))
-  call flush(17)
-
-end subroutine read_fhi
-
 subroutine read_upf(fname,znum,valnum)
   use ppm, only : lmx, matop
   use ppm, only : nrpp, nrppmx, lpploc, lpptop
-  use ppm, only : rrpp, vpploc, vlpp, phipp, vpploc, rho_core_a, core_correction
-!!! PTMOD add Hamann
-  use ppm, only : dij_diag_m, phipp_m, lpp_m, nproj_m
-!!!
+  use ppm, only : rrpp, vpploc, rho_core_a, core_correction
+  use ppm, only : dij_diag, phipp, lpp, nproj
+
   implicit none
   integer           :: i,ii,i1,i2,in,np
   character(50)     :: fname
@@ -175,16 +57,9 @@ subroutine read_upf(fname,znum,valnum)
   integer           :: iread
   logical           :: found_cc, core_c
   real*8,allocatable:: grd(:), rho_cr(:)
-  real*8,allocatable:: phi(:,:)
-  real*8,allocatable:: vl_rd(:,:)
   real*8,allocatable:: vloc_rd(:)
-!!! PTMOD Hamann addition
-  real*8 :: norm2
-  real*8, allocatable  :: dij_m(:,:),phi_m(:,:),nrmp(:),dr(:)
-!  real*8, allocatable  :: dij_diag_m(:,:),phipp_m(:,:,:)
-!  integer, allocatable :: lpp_m(:,:)
-!!!
-  real*8            :: test, pi, r_valnum
+  real*8,allocatable:: dij(:,:),phi(:,:),nrmp(:),dr(:)
+  real*8            :: test, pi, r_valnum, norm2
 
   pi = dacos(-1d0)
 
@@ -218,7 +93,6 @@ subroutine read_upf(fname,znum,valnum)
         call elname(name,znum) 
         write(17,*) "element:",name,znum
      case("z_valence")
-!        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
         write(f2,'(A)')str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)
         read(f2,*) r_valnum
         valnum = nint(r_valnum) ! integer
@@ -265,11 +139,9 @@ subroutine read_upf(fname,znum,valnum)
         else
            stop ' core_correction ill defined, stopping '
         end if
-!!! PTMOD add Hamann
      case("number_of_proj")
         sz = len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))
         call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),sz,np)
-!!! END PTMOD
      end select
      if(index(full,"/>")/=0)  exit header
   end do header
@@ -297,27 +169,18 @@ subroutine read_upf(fname,znum,valnum)
   write(17,*) "Number of points:",lngth; call flush(17)
 
   allocate(      grd(lngth),       stat=st); call check0(st,' grd     ')
-  allocate(      phi(lngth,0:lmax),stat=st); call check0(st,' phi     ')
-  allocate(    vl_rd(lngth,0:lmax),stat=st); call check0(st,' vl_rd   ')
   allocate(  vloc_rd(lngth),       stat=st); call check0(st,' vloc_rd ')
   allocate(   rho_cr(lngth),       stat=st); call check0(st,' r_core  ')
-!!! PTMOD add Hamann
   allocate(         dr(lngth),    stat=st); call check0(st,' dr        ')
-  allocate(      phi_m(lngth,np), stat=st); call check0(st,' phi_m     ')
-  allocate(      dij_m(np,np),    stat=st); call check0(st,' dij_m     ')
+  allocate(      phi(lngth,np), stat=st); call check0(st,' phi     ')
+  allocate(      dij(np,np),    stat=st); call check0(st,' dij     ')
   allocate(       nrmp(np),       stat=st); call check0(st,' nrmp      ')
-!  allocate(      lpp_m(20,matop), stat=st); call check0(st,' lpp_m     ') ! '20'= a tmp hack
-!  allocate( dij_diag_m(20,matop), stat=st); call check0(st,' dij_diag_m') ! '20'= a tmp hack
-!  allocate(    phipp_m(nrppmx,20,matop),stat=st); call check0(st,' phipp_m') ! '20'= a tmp hack
-!!! END PTMOD
 
   read(001,*) grd
-!!! PTMOD add Hamann
   ! make dr
   dr(1)      = grd(2)-grd(1)
   dr(lngth)     = grd(lngth)-grd(lngth-1)
   dr(2:lngth-1) = (grd(3:lngth)-grd(1:lngth-2))/2d0
-!!! END PTMOD
 
   core_correction(ma) = core_c
   if(core_c) then
@@ -342,25 +205,6 @@ subroutine read_upf(fname,znum,valnum)
   
   read(001,*) vloc_rd(:)
 
-  do 
-     read(001,*) str1
-     if(str1=="<PP_SEMILOCAL>") exit
-  end do
-
-  do il = 0,lmax
-     if(il /= lloc) then
-        read(001,*) str1,str1,str1,str1,str2 
-        call str2int(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1),1,licn)
-        write(17,*) "Reading icnnel",licn
-        call check(il,licn,' il, licn ')
-        read(001,*) vl_rd(:,licn)
-        write(17,*)"First and Last potential point read for channel",licn," are: ",vl_rd(1,licn),&
-             vl_rd(lngth,licn)
-        read(001,*)
-     end if
-  end do
-
-!!! PTMOD Hamann addition: add nonlocal part
   !
   !  Next: nonlocal part,
   !
@@ -405,14 +249,14 @@ subroutine read_upf(fname,znum,valnum)
      ! now check that l and the index are correct. 
      call check_lele(0,il,9,' 0-il-9 ')
      call check(ii,in,' ii, in ')
-     lpp_m(in,ma)=il
+     lpp(in,ma)=il
 
      ! read w.f.
-     read(001,*) phi_m(:,in)
+     read(001,*) phi(:,in)
      !
      ! print w.f. properties
      write(17,*)' atom index=',ma,' index=',in
-     norm2 = sum(phi_m(:,in)**2*dr) !!! need dr
+     norm2 = sum(phi(:,in)**2*dr) !!! need dr
      write(17,*)' <phi(:,in)|phi(:,in> ',norm2
      if(abs(norm2-1d0)>1d-4) then
         write(17,*)' potential problem:  in, l, <phi(:,in)|phi(:,in> ',in,il,norm2
@@ -421,7 +265,7 @@ subroutine read_upf(fname,znum,valnum)
 
      ! normalize phi
      nrmp(in)=sqrt(norm2)
-     phi_m(:,in) = phi_m(:,in)/nrmp(in)
+     phi(:,in) = phi(:,in)/nrmp(in)
 
      read(001,'(A)') full
      if(index(full,'</PP_BETA')==0) then; write(6,*)' error , full=',full; stop
@@ -442,45 +286,26 @@ subroutine read_upf(fname,znum,valnum)
      end do loopend
   end if end_dij
 
-  read(001,*)dij_m
-  write(17,*)' unnormalized dij(in Rydberg) ',dij_m
+  read(001,*)dij
+  write(17,*)' unnormalized dij(in Rydberg) ',dij
 
   !
   ! check diagonality, extract diagonal value.  
   !
-  call check_le(np, size(dij_diag_m,1),' np, diag_diag ')
+  call check_le(np, size(dij_diag,1),' np, diag_diag ')
 
   do i1=1,np
      do i2=1,np
-        dij_m(i1,i2) = nrmp(i1)*nrmp(i2)* dij_m(i1,i2)  ! normalize
+        dij(i1,i2) = nrmp(i1)*nrmp(i2)* dij(i1,i2)  ! normalize
         if(i1==i2) then;
-           dij_diag_m(i1,ma) = dij_m(i1,i1) / 2d0  ! Rydberg to Hartree
+           dij_diag(i1,ma) = dij(i1,i1) / 2d0  ! Rydberg to Hartree
         else
-           if(abs(dij_m(i1,i2))>1d-6) stop ' dij_m not diagonal '
+           if(abs(dij(i1,i2))>1d-6) stop ' dij not diagonal '
         end if
      end do
   end do
-  write(17,*)' normalized dij_diag ',dij_diag_m(:np,ma)
-!!! END PTMOD
+  write(17,*)' normalized dij_diag ',dij_diag(:np,ma)
 
-  do 
-     read(001,*) str1
-     if(index(str1,"<PP_PSWFC>")/=0) exit
-  end do
-
-  do il = 0,lmax
-     search_closer : do
-        read(001,'(A)') full
-        if(index(full,'>')/=0) exit search_closer
-     end do search_closer
-     read(001,*) phi(:,il)
-     read(001,'(A)') full
-     if(index(full,'</PP_CHI')==0) then 
-        write(6,*)' Error.  Should have read </PP_CHI but instead read: ',trim(full)
-        stop
-     end if
-  end do
-  
   if(lmax>3) then
      write(6,*)' ERROR: the value of lmax read from pp is: ',lmax, ' higher than 3, max now '
      stop
@@ -488,53 +313,31 @@ subroutine read_upf(fname,znum,valnum)
 
   lpptop(ma)=min(lmax,lmx)
   lpploc(ma)=lloc
-!!! PTMOD add Hamann
-  nproj_m( ma) = np
-!!!
+  nproj( ma) = np
   call check_le(lngth,nrppmx,' lngth nrppmx ')
 
   vpploc(    1:lngth,  ma) = vloc_rd(1:lngth)/2.d0               ! Rydberg to Hartree     
   nrpp(                ma) = lngth
   rrpp(      1:lngth,  ma) = grd(1:lngth)
-  phipp(     1:lngth,:,ma) = 0d0
-  vlpp(      1:lngth,:,ma) = 0d0
 
   rho_core_a(:,        ma) = 0d0
   if(core_correction(ma))  rho_core_a(1:lngth,  ma) = rho_cr(1:lngth)
 
-  !write(6,*) "DEBUG: at =",ma,"sum rho_cr=",sum(rho_cr(1:lngth))
-
-  lloop : do il = 0,min(lmx,lmax)
-     if(il/=lloc) then
-        phipp(1:lngth,il,ma) =  phi(1:lngth,il)/grd(1:lngth)     ! note dividing by r 
-        vlpp( 1:lngth,il,ma) =  vl_rd(1:lngth,il)/2.d0           ! Rydberg to Hartree     
-     end if
-  end do lloop
-
-!!! PTMOD
-  phipp_m( 1:lngth,:,ma) = 0d0
+  phipp( 1:lngth,:,ma) = 0d0
   do in=1,np
      do ir=1,lngth
-        if(grd(ir)>1d-5) phipp_m(ir,in,ma) = phi_m(ir,in)/grd(ir)
+        if(grd(ir)>1d-5) phipp(ir,in,ma) = phi(ir,in)/grd(ir)
      enddo
   end do
-!!! END PTMOD
 
   call flush(17)
   close(001)
   deallocate(grd)
-  deallocate(phi)
-  deallocate(vl_rd)
   deallocate(vloc_rd)
-!!! PTMOD add Hamann
   deallocate(dr)
-  deallocate(phi_m)
-  deallocate(dij_m)
+  deallocate(phi)
+  deallocate(dij)
   deallocate(nrmp)
-!  deallocate(lpp_m)
-!  deallocate(dij_diag_m)
-!  deallocate(phipp_m)
-!!! END PTMOD
 
 end subroutine read_upf
 

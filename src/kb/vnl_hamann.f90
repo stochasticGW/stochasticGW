@@ -19,7 +19,7 @@ subroutine addvnl_c_hamann(p,hp,n,ms,cnst)
   use kb_mod, only : mapai
   use kb_mod, only : ngs
   use kb_mod, only : mapkbg
-  use kb_mod, only : dij_diag_m
+  use kb_mod, only : dij_diag
   use kb_mod, only : nsuper_ianl
   use kb_mod, only : indx_ianl
   use kb_mod, only : start_ianl
@@ -44,7 +44,7 @@ subroutine addvnl_c_hamann(p,hp,n,ms,cnst)
          ce = ce + vp_hamann(start_ianl(j)+igg) * p(mapkbg(igg,ia),is)
       enddo
              
-      ce = ce * dv * cnst* dij_diag_m(i,ma) ! note scaling
+      ce = ce * dv * cnst* dij_diag(i,ma) ! note scaling
              
       do igg=1,ngs(ia)
          hp(mapkbg(igg,ia),is) = hp(mapkbg(igg,ia),is) + ce * vp_hamann(start_ianl(j)+igg)

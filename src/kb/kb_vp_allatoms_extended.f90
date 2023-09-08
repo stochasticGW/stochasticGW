@@ -14,8 +14,8 @@
 !                                         
 subroutine kb_vp_allatoms_extended
   use gwm, only : lmax=>lmx
-  use kb_mod, only : nproj_m
-  use kb_mod, only : lpp_m
+  use kb_mod, only : nproj
+  use kb_mod, only : lpp
   use kb_mod, only : lpptop
   use kb_mod, only : lpploc
   use kb_mod, only : nsuper_ianl
@@ -45,11 +45,11 @@ subroutine kb_vp_allatoms_extended
   DO ia=1,na
 
      ma = mapai(ia)
-     np = nproj_m(ma)
+     np = nproj(ma)
      nilm=at_nilm(ia)
      j=at_ilms(ia)
 
-     lh = maxval(lpp_m(1:np,ma))
+     lh = maxval(lpp(1:np,ma))
      call check_lele(0,lh,3,        ' 2-lh-3        ')
      call check_lele(0,lpptop(ma),3,' 2-lpptop_ma-3 ')
      call check_lele(2,lmax,3,      ' 2-lmax-3      ')
@@ -102,11 +102,11 @@ subroutine kb_vp_allatoms_extended
     j=0
     do ia=1,na
        ma=mapai(ia)
-       np=nproj_m(ma)
+       np=nproj(ma)
        at_ilms(ia)=j
        at_nilm(ia)=0
        do in=1,np
-          l=lpp_m(in,ma)
+          l=lpp(in,ma)
           if (l/=lpploc(ma).and.l.le.lmax) then
              do m=1,2*l+1
                 j=j+1
@@ -124,9 +124,9 @@ subroutine kb_vp_allatoms_extended
     count_ianl=0
     do ia=1,na
        ma=mapai(ia)
-       np=nproj_m(ma)
+       np=nproj(ma)
        do in=1,np
-          l=lpp_m(in,ma)
+          l=lpp(in,ma)
           if (l/=lpploc(ma).and.l.le.lmax) then
              do m=1,2*l+1
                 j=j+1

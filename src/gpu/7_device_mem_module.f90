@@ -50,7 +50,7 @@ contains
       use gwm,    only : dv, dt, dh
       use kb_mod, only : nsuper_ianl
       use kb_mod, only : indx_ianl
-      use kb_mod, only : dij_diag_m
+      use kb_mod, only : dij_diag
       use kb_mod, only : mapai
       logical, intent(in)    :: chebfacs
       integer               :: k, j, i, ia, ma
@@ -72,9 +72,9 @@ contains
          i  = indx_ianl(j,2)
          ma = mapai(ia)
          if (chebfacs) then
-            scpsi(k) = dv * two_ov_dh * dij_diag_m(i,ma)
+            scpsi(k) = dv * two_ov_dh * dij_diag(i,ma)
          else
-            ovdev(k) = dv * (exp(fac*dij_diag_m(i,ma))-1d0)
+            ovdev(k) = dv * (exp(fac*dij_diag(i,ma))-1d0)
          endif
          k=k+1
       enddo

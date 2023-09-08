@@ -18,14 +18,13 @@ module kb_mod
   use kb_top_module, only : ng=>n, nx, ny, nz, dx, dy, dz, dv
   use kb_top_module, only : na, lmx, scale_vh, dim_periodic
   use kb_top_module, only : vloc_tot
-  use ppm,           only : nrpp, rrpp, lpptop, lpploc, vlpp, vpploc, phipp !, vphipp
-  use ppm,           only : nproj_m, lpp_m, phipp_m, nsuper_ianl, indx_ianl, start_ianl
-  use ppm,           only : vp_hamann, dij_diag_m
+  use ppm,           only : nrpp, rrpp, lpptop, lpploc, vpploc
+  use ppm,           only : nproj, lpp, phipp, nsuper_ianl, indx_ianl, start_ianl
+  use ppm,           only : vp_hamann, dij_diag
   implicit none
   save
   integer                  :: st
   integer                  :: ngsmall
-  integer                  :: iumx
   integer, allocatable     :: ngs(:)
   integer, allocatable     :: mapkbg(:,:)
   real*8,  allocatable     :: rgn(:,:,:)

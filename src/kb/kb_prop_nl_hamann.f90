@@ -21,7 +21,7 @@ subroutine prop_nl_hamann(p,q,n,ms)
   use kb_mod, only : mapai
   use kb_mod, only : ngs
   use kb_mod, only : mapkbg
-  use kb_mod, only : dij_diag_m
+  use kb_mod, only : dij_diag
   use kb_mod, only : nsuper_ianl
   use kb_mod, only : indx_ianl
   use kb_mod, only : start_ianl
@@ -46,7 +46,7 @@ subroutine prop_nl_hamann(p,q,n,ms)
          ce = ce + vp_hamann(start_ianl(j)+igg) * p(mapkbg(igg,ia),is)
       enddo
 
-      ce = ce * dv * (exp(-ci*dt/2d0*dij_diag_m(i,ma))-1d0) 
+      ce = ce * dv * (exp(-ci*dt/2d0*dij_diag(i,ma))-1d0) 
         
       do igg=1,ngs(ia)
          q(mapkbg(igg,ia),is) = q(mapkbg(igg,ia),is) + ce * vp_hamann(start_ianl(j)+igg)
