@@ -432,7 +432,7 @@ subroutine parse_section(line,fields,results)
       qf=-1
       do while (m<1024)
 
-         if (line(m:m)=='=') then
+         if (line(m:m)=='=' .and. qi==-1) then
             ff=m-1 ! field ends before equals
             m=m+1
             qi=m   ! result must begin with quote after equals
