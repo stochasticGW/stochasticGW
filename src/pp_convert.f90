@@ -51,7 +51,8 @@ subroutine read_upf(fname,znum,valnum)
   character(50)     :: fname
   character(2)      :: name 
   character(80)     :: str1,str2
-  character(500)    :: full,f2,tmp
+  character(1024)   :: full,f2,tmp
+  character(len=80), dimension(:), allocatable :: fields, results
   integer           :: ir,znum,lmax,lloc,sz,lngth,st,licn,il,ipt,valnum
   integer           :: ma
   integer           :: iread
@@ -70,81 +71,75 @@ subroutine read_upf(fname,znum,valnum)
                                stop "UPF Version 2.0.1 required!"
   
   headerhead : do
-     read(001,*)str1
-     if(index(str1,"<PP_HEADER")/=0) then
+     read(001,"(A)")full
+     if(index(full,"<PP_HEADER")/=0) then
         exit headerhead
      endif
   end do headerhead
 
-  header: do
-     read(001,"(A)")full
-     read(full,*)str1
-     str2=str1(1:scan(str1,'=')-1)
-     call lower_the_case(str2)
-     select case(trim(str2))
-     case("element")
-        i=scan(full,'"')
-        call check_le(i+2,len_trim(full),' i+2, len_trim(full) ')
-        if(full(i+1:i+1)==' ') then ! " H"
-           name=full(i+2:i+2)//' '
-        else                        ! Arbitrary
-           name=full(i+1:i+2)
-        endif
-        call elname(name,znum) 
-        write(17,*) "element:",name,znum
-     case("z_valence")
-        write(f2,'(A)')str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)
-        read(f2,*) r_valnum
-        valnum = nint(r_valnum) ! integer
-        if(abs(valnum-r_valnum)>1d-4)then;
-           write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
-           stop
-        endif
-        write(17,*) "valence:",valnum
-     case("l_max")
-        if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
-           stop "lmax <1!"
-        end if
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,lmax)
-        write(17,*) "L max=",lmax
-     case("is_ultrasoft")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           write(17,*) "Ultrasoft not supported!"
-           stop
-        end if
-     case("is_paw")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           write(17,*) "PAW not supported!"
-           stop
-        end if
-     case("functional")
-        str2=str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1) 
-        if(str2/='PW'.and.str2/='SLA-PW') then
-           write(6,*) "Error: Functional not supported!"
-           write(6,*) "Functional is:",str2
-           stop
-        end if
-     case("l_local")
-        if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
-           stop "lloc <10!"
-        end if
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,lloc)
-        !if(lloc/=2) stop "L=2 must be local!"
-        write(17,*) "L loc=",lloc
-     case("core_correction")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           core_c=.true.
-        else if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="F") then
-           core_c=.false.
-        else
-           stop ' core_correction ill defined, stopping '
-        end if
-     case("number_of_proj")
-        sz = len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),sz,np)
-     end select
-     if(index(full,"/>")/=0)  exit header
-  end do header
+! Parse 'full'
+  call parse_section(full,fields,results)
+
+! Read until close bracket '>' is found
+  do while (index(full,">")==0)
+    read(001,"(A)") full
+    call parse_section(full,fields,results)
+  enddo
+
+! Extract the necessary fields from the list
+  call get_field(fields, results, 'element', str1)
+  name=str1(1:2)
+  call elname(name,znum)
+  write(17,*) "element:",name,znum
+
+  call get_field(fields, results, 'z_valence', str1)
+  r_valnum=string2real8(str1)
+  valnum = nint(r_valnum) ! integer
+  if (abs(valnum-r_valnum)>1d-4)then;
+     write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
+     stop
+  endif
+  write(17,*) "valence:",valnum
+
+  call get_field(fields, results, 'is_ultrasoft', str1)
+  if (string2logical(str1)) then
+     write(6,*) "Pseudopotential problem: ultrasoft not supported!"
+     write(17,*) "Pseudopotential problem: ultrasoft not supported!"
+     stop
+  endif
+   
+  call get_field(fields, results, 'is_paw', str1)
+  if (string2logical(str1)) then
+     write(6,*) "Pseudopotential problem: PAW not supported!"
+     write(17,*) "Pseudopotential problem: PAW not supported!"
+     stop
+  endif
+   
+  call get_field(fields, results, 'functional', str1)
+  write(6,*) " Functional is: ",trim(adjustl(str1))
+
+  call get_field(fields, results, 'l_max', str1)
+  lmax=string2integer(str1)
+  write(17,*) "L max=",lmax
+
+  call get_field(fields, results, 'l_local', str1)
+  lloc=string2integer(str1)
+  write(17,*) "L loc=",lloc
+  call check_le(-1,lloc,' (-1)-lloc ')
+
+  call get_field(fields, results, 'core_correction', str1)
+  core_c=string2logical(str1)
+   
+  call get_field(fields, results, 'number_of_proj', str1)
+  np=string2integer(str1)
+  write(17,*) "Number of projections:",np
+  call check_lele(1,np,size(phipp,2),' 1-np-szphipp2 ')
+
+  call get_field(fields, results, 'mesh_size', str1)
+  lngth=string2integer(str1)
+  write(17,*) "Number of points:",lngth
+
+  deallocate(fields,results)
   call flush(17)
   !
   ! verifying that atom is among list of nuclei
@@ -155,30 +150,26 @@ subroutine read_upf(fname,znum,valnum)
      close(001)
      return
   endif
-  search_pp_r : do     
+
+  allocate(    grd(lngth),    stat=st); call check0(st,' grd     ')
+  allocate(vloc_rd(lngth),    stat=st); call check0(st,' vloc_rd ')
+  allocate( rho_cr(lngth),    stat=st); call check0(st,' r_core  ')
+  allocate(     dr(lngth),    stat=st); call check0(st,' dr      ')
+  allocate(    phi(lngth,np), stat=st); call check0(st,' phi     ')
+  allocate(    dij(np,np),    stat=st); call check0(st,' dij     ')
+  allocate(   nrmp(np),       stat=st); call check0(st,' nrmp    ')
+
+  search_pp_r : do
      read(001,"(A)") full
      if(index(full,"PP_R")/=0) exit search_pp_r
   enddo search_pp_r
-  
+
   read(full,*)str1,str2,str2
   if(index(str1,"PP_R")==0) stop "Problem reading PP_R!"
 
-  sz = len(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1))
-  call str2int(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1),sz,lngth)
-
-  write(17,*) "Number of points:",lngth; call flush(17)
-
-  allocate(      grd(lngth),       stat=st); call check0(st,' grd     ')
-  allocate(  vloc_rd(lngth),       stat=st); call check0(st,' vloc_rd ')
-  allocate(   rho_cr(lngth),       stat=st); call check0(st,' r_core  ')
-  allocate(         dr(lngth),    stat=st); call check0(st,' dr        ')
-  allocate(      phi(lngth,np), stat=st); call check0(st,' phi     ')
-  allocate(      dij(np,np),    stat=st); call check0(st,' dij     ')
-  allocate(       nrmp(np),       stat=st); call check0(st,' nrmp      ')
-
   read(001,*) grd
   ! make dr
-  dr(1)      = grd(2)-grd(1)
+  dr(1)         = grd(2)-grd(1)
   dr(lngth)     = grd(lngth)-grd(lngth-1)
   dr(2:lngth-1) = (grd(3:lngth)-grd(1:lngth-2))/2d0
 
@@ -339,7 +330,9 @@ subroutine read_upf(fname,znum,valnum)
   deallocate(dij)
   deallocate(nrmp)
 
-end subroutine read_upf
+!end subroutine read_upf
+
+contains
 
 subroutine elname(ccha_inp,ic)
   use ppm, only : an => atom_name, un=> atom_upper_name
@@ -376,11 +369,151 @@ subroutine elname(ccha_inp,ic)
   if(ic<1) stop ' Error: didnt find atom ' ! superflous, but always check.
 end subroutine elname
 
-subroutine str2int(str,n,num)
+integer function string2integer(str) result(num)
   implicit none
-  integer, intent(in) :: n
-  character(n)     :: str
-  integer          :: num
+  character(len=*) :: str
   read(str,*) num
-end subroutine str2int
+end function string2integer
 
+real*8 function string2real8(str) result(num)
+  implicit none
+  character(len=*) :: str
+  read(str,*) num
+end function string2real8
+
+logical function string2logical(str) result(val)
+  implicit none
+  character(len=*) :: str
+
+  call lower_the_case(str)
+
+  if (trim(adjustl(str))=='t' .or. trim(adjustl(str))=='true') then
+     val=.true.
+  elseif (trim(adjustl(str))=='f' .or. trim(adjustl(str))=='false') then
+     val=.false.
+  else
+     write(*,*) "string2logical(): must be 'true' or 'false', not ",str
+     stop ' string2logical(): bad input value'
+  endif
+end function string2logical
+
+subroutine parse_section(line,fields,results)
+   implicit none
+   character(len=*), intent(in) :: line
+   character(len=*), dimension(:), allocatable :: fields, results
+   character(len=80), dimension(:), allocatable :: field_tmp, result_tmp
+   character(len=80) :: field, val
+   character(len=1)  :: q
+   integer :: i,fi,ff,qi,qf,m,fct,itn
+   integer :: nfields, nresults
+
+   if (allocated(fields)) then
+      nfields=SIZE(fields)
+   else
+      nfields=0
+   endif
+
+   if (allocated(results)) then
+      nresults=SIZE(results)
+   else
+      nresults=0
+   endif
+
+   if (nresults/=nfields) &
+      stop ' parse_section(): nfields must equal nresults'
+
+   do itn=1,2
+      fct=0
+      m=1
+      fi=-1
+      ff=-1
+      q='$'
+      qi=-1
+      qf=-1
+      do while (m<1024)
+
+         if (line(m:m)=='=') then
+            ff=m-1 ! field ends before equals
+            m=m+1
+            qi=m   ! result must begin with quote after equals
+            q=line(m:m)
+            if (q/='"'.and.q/="'") then ! select single or double quotes
+               write(*,*) 'parse_section(): quoted section must follow ='
+               stop
+            endif
+
+         elseif (line(m:m)==' ') then
+            if (qi==-1) then
+               fi=m+1 ! advance the field begin tag if not inside a result
+            endif
+
+         elseif (line(m:m)==q(1:1)) then
+            if (q(1:1)/='$') then ! finishing a field-result pair
+               qf=m
+               fct=fct+1
+               if (itn==2) then
+                  write(fields(nfields+fct),'(A)') line(fi:ff)
+                  write(results(nfields+fct),'(A)') line(qi+1:qf-1)
+               endif
+               fi=-1
+               ff=-1
+               q='$'
+               qi=-1
+               qf=-1
+            endif
+
+         endif
+         m=m+1
+      enddo
+
+!     Extend length of 'fields' by number found in this input line
+      if (itn==1) then
+         if (fct==0) exit
+         if (nfields>0) then
+            allocate(field_tmp(nfields),result_tmp(nfields))
+            field_tmp(1:nfields)=fields(1:nfields)
+            result_tmp(1:nfields)=results(1:nfields)
+            deallocate(fields,results)
+         endif
+         allocate(fields(nfields+fct),results(nfields+fct))
+         if (nfields>0) then
+            fields(1:nfields)=field_tmp(1:nfields)
+            results(1:nfields)=result_tmp(1:nfields)
+            deallocate(field_tmp,result_tmp)
+         endif
+
+      endif
+
+   enddo ! itn
+
+end subroutine parse_section
+
+subroutine get_field(fields, values, thefield, thevalue)
+  implicit none
+  character(len=*), dimension(:), intent(in) :: fields, values
+  character(len=*), intent(in)  :: thefield
+  character(len=*), intent(out) :: thevalue
+  character(len=1) :: q
+  integer :: i,nfields
+  logical :: found
+
+  nfields=SIZE(fields)
+
+  found=.false.
+  thevalue=''
+  do i=1,nfields
+    if (trim(adjustl(fields(i)))==trim(adjustl(thefield))) then
+       write(thevalue,'(A)') values(i)
+       found=.true.
+       EXIT
+    endif
+  enddo
+
+  if (.not.found) then
+     write(6,*) 'ERROR: could not find field ',thefield
+     stop ' input field not found'
+  endif
+
+end subroutine get_field
+
+end subroutine read_upf
