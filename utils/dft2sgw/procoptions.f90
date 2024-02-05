@@ -12,6 +12,7 @@
         LOGICAL :: resort
         LOGICAL :: squareroot
         LOGICAL :: normalize
+        INTEGER :: nxyz(3) ! For grid sizes read from input
       END TYPE PROCOPS
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

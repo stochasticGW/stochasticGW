@@ -11,6 +11,7 @@
       use PROCOPTIONS
       use UTILS
       use WRITESGW
+      use FFTINTERPOLATE
 
       implicit none
       TYPE (DFT2SGWIN)   :: theinput
@@ -19,6 +20,13 @@
       TYPE (PROCOPS)     :: theoptions
       character(len=256) :: filename
       integer :: i,u
+
+!!! TESTING
+!      call test_1d_interpolation()
+!      call test_1dN_interpolation()
+!      call test_dcube()
+!      call test_3d_interpolation()
+!!! END TESTING
 
 !     Read input file for dft2sgw
       filename='dft2sgw.in'

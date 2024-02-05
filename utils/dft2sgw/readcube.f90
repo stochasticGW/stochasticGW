@@ -7,6 +7,7 @@
 
       USE PROCOPTIONS
       USE UTILS
+      USE FFTINTERPOLATE
 
       implicit none
       character*2 :: an(118)
@@ -104,6 +105,7 @@
       TYPE (CUBE) :: thecube
       TYPE (PROCOPS), intent(in) :: theoptions
       real*8, allocatable :: phi3(:,:,:)
+      real*8, allocatable :: phitmp(:)
       real*8  :: lxyz(3),norm
       integer :: i,j
 
@@ -138,6 +140,32 @@
             else
                thecube%phi(j)=sqrt(thecube%phi(j))
             endif
+         enddo
+      ENDIF
+
+!     Interpolate grid if input file dims differ from cube file dims
+      IF (ANY(theoptions%nxyz.ne.thecube%nxyz)) THEN
+         write(*,'(X,A,7(I0,A))') &
+         'Regridding state ',thecube%indx,': (',thecube%nxyz(1),',',&
+         thecube%nxyz(2),',',thecube%nxyz(3),') -> (',&
+         theoptions%nxyz(1),',',theoptions%nxyz(2),',',&
+         theoptions%nxyz(3),')'
+
+         allocate(phitmp(PRODUCT(theoptions%nxyz)))
+         call fft_interpolate3(thecube%phi,phitmp,&
+                               thecube%nxyz,theoptions%nxyz)
+         deallocate(thecube%phi)
+         allocate(thecube%phi(PRODUCT(theoptions%nxyz)))
+         thecube%phi(:)=phitmp(:)
+         deallocate(phitmp)
+ 
+         thecube%np=1
+         thecube%dv=1
+         do j=1,3
+            thecube%nxyz(j)=theoptions%nxyz(j)
+            thecube%dxyz(j)=lxyz(j)/dble(theoptions%nxyz(j))
+            thecube%np=thecube%np*theoptions%nxyz(j)
+            thecube%dv=thecube%dv*thecube%dxyz(j)
          enddo
       ENDIF
 

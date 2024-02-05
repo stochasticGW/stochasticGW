@@ -44,11 +44,13 @@
       u=openfile(filename)
       read(u,*) ch, theinput%outputfile
       read(u,*) ch, theinput%filetype
+      read(u,*,iostat=stat) ch,theoptions%nxyz(1),&
+                            theoptions%nxyz(2),theoptions%nxyz(3)
       read(u,*,iostat=stat) ch,orbs(:)
       if (stat == iostat_end) continue
 
 !     Filetype,filecase: for reading from different elec. str. packages
-!     Set processing options here aslo
+!     Set processing options here also
       if (compareStringsForEQ(theinput%filetype,'cp2k')) then
          theinput%filecase=0
          theoptions%shift=.TRUE.
