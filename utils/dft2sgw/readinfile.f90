@@ -25,7 +25,7 @@
       subroutine read_dft2sgw(filename,theinput,theoptions)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-! Reads cp2k2sgw input type
+! Reads dft2sgwin type
 
       implicit none
       TYPE (DFT2SGWIN) :: theinput
@@ -62,6 +62,13 @@
          theoptions%shift=.TRUE.
          theoptions%resort=.TRUE.
          theoptions%squareroot=.TRUE.
+         theoptions%normalize=.TRUE.
+      elseif (compareStringsForEQ(theinput%filetype,'rmg') .or. &
+              compareStringsForEQ(theinput%filetype,'rmgdft') ) then
+         theinput%filecase=2
+         theoptions%shift=.TRUE.
+         theoptions%resort=.TRUE.
+         theoptions%squareroot=.FALSE.
          theoptions%normalize=.TRUE.
       else
          write(*,*) 'Wrapper for files of type ',&

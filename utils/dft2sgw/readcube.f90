@@ -279,6 +279,14 @@
             write(make_cube_name,'(A)') 'tmp.pp_dens'
          endif
 
+      case(2) ! RMGDFT
+
+         if (indx.gt.0) then
+            write(make_cube_name,'(A,I0,A)') 'kpt0_mo',indx-1,'.cube'
+         else
+            write(make_cube_name,'(A)') 'density.cube'
+         endif
+
       case default
          write(*,'(A,I0,A)') 'Wrapper for files of type ',filecase,&
          ' are not yet implemented.'

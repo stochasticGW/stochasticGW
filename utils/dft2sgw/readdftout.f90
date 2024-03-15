@@ -10,6 +10,8 @@
 
       implicit none
 
+      real*8, parameter  :: eV2au = 0.03674932217565499
+
       TYPE DFTOUT
         integer :: norb, nocc
         real*8  :: homo, lumo
@@ -37,6 +39,8 @@
          call read_cp2kout(filename,theoutput)
       case(1) ! QE
          call read_qeout(filename,theoutput)
+      case(2) ! RMGDFT
+         call read_rmgout(filename,theoutput)
       case default
          write(*,'(A,I0,A)') 'Wrapper for files of type ',filecase,&
          ' are not yet implemented.'
@@ -98,9 +102,6 @@
          theoutput%occ(i)=NINT(occ_r)
       enddo
 
-      theoutput%homo=theoutput%nrg(nocc)
-      theoutput%lumo=theoutput%nrg(nocc+1)
-
       close(u)
 
 !     Need at least one empty orbital for HOMO-LUMO-gap
@@ -129,7 +130,6 @@
       implicit none
       TYPE (DFTOUT) :: theoutput
       character(len=256), intent(in) :: filename
-      real*8, parameter  :: eV2au = 0.03674932217565499
       character(len=150) :: line,subline
       character*50       :: s1
       integer :: i, u, norb, nocc, whereis
@@ -200,6 +200,83 @@
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+      subroutine read_rmgout(filename,theoutput)
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Reads cp2k output and fills DFTOUT type
+
+      implicit none
+      TYPE (DFTOUT) :: theoutput
+      character(len=256), intent(in) :: filename
+      character(len=150) :: line
+      character*50       :: s1
+      character*4        :: dummy_c4
+      character*2        :: dummy_c2
+      character*1        :: dummy_c1
+      real, dimension(5) :: etmp
+      character(len=16), dimension(5) :: occtmp
+      logical :: file_flg
+      integer :: i,j,jm,ind,u,dummy_i,nocc,norb,norbrd
+      real*8  :: dummy_r, occ_r, energy
+
+
+      u=openfile(filename)
+
+!     Read number of states
+      s1 = "Number of states:"
+      call searchstring(u,s1,line)
+      norb = get_i_field(line,s1)
+      norbrd = (norb+5-1)/5
+
+      allocate(theoutput%nrg(norb),theoutput%occ(norb))
+      theoutput%norb=norb
+      theoutput%nrg(:)=-1.d-99
+      theoutput%occ(:)=-1
+      theoutput%prefix =''
+
+!     Read orbital energies and occupancies from output
+      s1 = "potential convergence has been achieved. stopping ..."
+      call searchstring(u,s1,line)
+      s1 = "KOHN SHAM EIGENVALUES [eV] AT K-POINT [  0]:"
+      call searchstring(u,s1,line)
+      read(u,*)
+      do i=1,norbrd
+         jm=mod(min(i*5,norb)-1,5)+1
+         read(u,*) dummy_c4,dummy_i,dummy_i,dummy_c2, &
+                  (etmp(j),occtmp(j),j=1,jm)
+         do j=1,5
+            ind=5*(i-1)+j
+            if (ind.le.norb) then
+               theoutput%nrg(ind)=etmp(j)*eV2au
+               read(occtmp(j),'(A,f5.3,A)') dummy_c1,occ_r,dummy_c1
+               theoutput%occ(ind)=NINT(occ_r)
+            endif
+         enddo
+      enddo
+
+      close(u)
+
+!     Count occupied states and make sure that there is at least one
+!     unoccupied orbital
+      nocc=0
+      do i=1,norb
+         if (theoutput%occ(i).eq.0) exit
+         nocc=i
+      enddo
+      if (nocc.eq.norb) then
+         write(*,*) 'ERROR: need at least nocc+1 orbitals'
+         write(*,'(X,A,I0,A)') 'Make sure ',nocc+1,&
+              ' or more states are computed.'
+         stop
+      endif
+
+      theoutput%homo=theoutput%nrg(nocc)
+      theoutput%lumo=theoutput%nrg(nocc+1)
+
+      end subroutine read_rmgout
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       subroutine flush_dftout(theoutput)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,7 +318,7 @@
 ! Finds integer field value in file
 
         implicit none
-        character(len=*), intent(in) :: line, tag
+        character(len=*), intent(in) :: line,tag
         character(len=150) :: get_c_field
         integer :: whereis
 
