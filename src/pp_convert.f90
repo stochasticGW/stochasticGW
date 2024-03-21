@@ -14,7 +14,6 @@
 !                                                   
 subroutine pp_convert(fname,znum,valnum)
   use simple_mpi, only : rank
-  use ppm, only : lpptop
   implicit none
   character(50) :: fname
   character*3   :: b
@@ -33,149 +32,36 @@ subroutine pp_convert(fname,znum,valnum)
      select case(b)
      case('upf')
         call read_upf(fname,znum,valnum)
-     case('fhi')
-        call read_fhi(fname,znum,valnum)
      case default
-        stop "only fhi or upf format supported!"
+        stop "only upf format supported!"
      end select
 
      call flush(17)
   endif
 end subroutine pp_convert
 
-subroutine read_fhi(fname,znum,valnum)
-  use ppm, only : lmx
-  use ppm, only : nrpp, nrppmx, lpploc, lpptop
-  use ppm, only : rrpp, vlpp, phipp, vpploc
-  use ppm, only : rho_core_a, core_correction
-  implicit none
-  character(50)     :: fname
-  integer           :: ir, znum, dum, lmax, npt, lloc
-  integer           :: il, ipt,valnum
-  integer           :: ma, st
-  real*8,allocatable:: rho_cr(:)
-  real*4            :: rzn,rva
-  real*8            :: r8a, r8b, r8c, pi
-
-  pi = dacos(-1d0)
-
-  open(001,file='PP/'//trim(fname))
-  read(001,*)
-  read(001,*) rzn,rva
-  znum   = nint(rzn)
-  valnum = nint(rva)
-  call get_ma(znum,ma)
-  if(ma==0) then
-     close(001)
-     return
-  endif
-
-  read(001,*) dum,dum,lmax,lloc
-
-  write(17,*)' charge, valence, lmax, lloc ',znum,valnum,lmax,lloc
-  call flush(17)
-
-  if(lmax>3) then
-     write(6,*)' ERROR: value of lmax read from pp is: ',lmax,' higher than max allowed now, 3'
-     stop
-  endif
-
-  if(lmax<lloc) then
-     write(6,*)' ERROR: lmax, lloc read from pp are ',lmax,lloc
-     write(6,*)' & in fhi format we assume lmax.ge.lloc so change fhi file to have lmax=lloc.'
-     stop
-  endif
-
-  read(001,*) r8a, r8b
-  call get_ma(znum,ma)
-  !if(r8b==0.d0) then
-  if(abs(r8b)<1d-5) then
-    core_correction(ma) = .false.
-  else
-    core_correction(ma) = .true.
-    write(6,*) " For atom charge", znum," and internal index ",ma," a core correction is used!"
-    call flush(6)
-  end if
-
-  do ir = 1,14
-     read(001,*)
-  end do
-
-  nrpp(ma)=0
-  lloop : do il= 0,lmax  
-     read(001,*) npt,r8a
-     call check_le(npt,nrppmx,' npt nrppmx ')
-     
-     if(nrpp(ma)==0) then
-        nrpp(ma)=npt
-     else
-        call check(nrpp(ma),npt,' nrpp_ma, npt ')
-     end if
-     
-     do ipt = 1,npt
-        read(001,*) dum, r8a, r8b, r8c ; call check(ipt,dum,' ipt, dum ')
-
-        if(il==0) rrpp(ipt,ma)=r8a
-        if(il >0) call check_r(rrpp(ipt,ma),r8a,' rr_ipt_ma, r8a ')
-
-        if(il.le.lmx) then
-            phipp(ipt,il,ma) = r8b/rrpp(ipt,ma)  ! note, dividing phi by r.
-            vlpp( ipt,il,ma) = r8c               ! no Rydberg factor of half 
-        end if
-
-        if(il==lloc) then
-           vpploc(ipt, ma)  = r8c               ! no Rydberg factor of half
-        end if
-     end do
-  end do lloop
-  
-  lpptop(ma)=min(lmx,lmax)
-  lpploc(ma)=lloc
-
-  call get_ma(znum,ma)
-  rho_core_a(:,ma) = 0d0
-
-  if(core_correction(ma)) then
-     allocate(rho_cr(npt),stat=st)
-     if(st/=0) stop "Problem allocating rho_cr in FHI PP!"
-
-     do ipt = 1,npt
-        read(001,*) r8a, r8b
-        rho_cr(ipt) = r8b/(4.d0*pi)     !note factor of 1/4pi 
-     end do
-
-     if(npt.gt.size(rho_core_a,1)) stop "Problem with rho_core_a in FHI PP!"
-     if(rho_cr(npt).gt.1.D-10)     stop "Too hight core charge in FHI PP!"
-     rho_core_a(1:npt,ma) = rho_cr(1:npt)
-     deallocate(rho_cr)
-  end if
-
-  close(001)
-
-  write(17,*)' ma=atom_type, vpploc_min(for atom_type=ma) ',ma,minval(vpploc(1:nrpp(ma),ma))
-  call flush(17)
-
-end subroutine read_fhi
-
 subroutine read_upf(fname,znum,valnum)
-  use ppm, only : lmx
+  use ppm, only : lmx, matop
   use ppm, only : nrpp, nrppmx, lpploc, lpptop
-  use ppm, only : rrpp, vpploc, vlpp, phipp, vpploc, rho_core_a, core_correction
+  use ppm, only : rrpp, vpploc, rho_core_a, core_correction
+  use ppm, only : dij_diag, phipp, lpp, nproj
+
   implicit none
-  integer           :: i
+  integer           :: i,ii,i1,i2,in,np
   character(50)     :: fname
   character(2)      :: name 
   character(80)     :: str1,str2
-  character(500)    :: full,f2
+  character(1024)   :: full,f2,tmp
+  character(len=80), dimension(:), allocatable :: fields, results
   integer           :: ir,znum,lmax,lloc,sz,lngth,st,licn,il,ipt,valnum
   integer           :: ma
   integer           :: iread
   logical           :: found_cc, core_c
   real*8,allocatable:: grd(:), rho_cr(:)
-  real*8,allocatable:: phi(:,:)
-  real*8,allocatable:: vl_rd(:,:)
   real*8,allocatable:: vloc_rd(:)
-  real*8            :: test, pi, r_valnum
+  real*8,allocatable:: dij(:,:),phi(:,:),nrmp(:),dr(:)
+  real*8            :: test, pi, r_valnum, norm2
+
 
   pi = dacos(-1d0)
 
@@ -186,79 +72,76 @@ subroutine read_upf(fname,znum,valnum)
                                stop "UPF Version 2.0.1 required!"
   
   headerhead : do
-     read(001,*)str1
-     if(index(str1,"<PP_HEADER")/=0) then
+     read(001,"(A)")full
+     if(index(full,"<PP_HEADER")/=0) then
         exit headerhead
      endif
   end do headerhead
 
-  header: do
-     read(001,"(A)")full
-     read(full,*)str1
-     if(index(full,"/>")/=0)  exit header
-     str2=str1(1:scan(str1,'=')-1)
-     call lower_the_case(str2)
-     select case(trim(str2))
-     case("element")   ! Three possibilies, generically : " H", or "Si","H "
-        i=scan(full,'"')
-        call check_le(i+2,len_trim(full),' i+2, len_trim(full) ')
-        if(full(i+1:i+1)==' ') then ! " H"
-           name=full(i+2:i+2)//' '
-        else                        ! "Si" or "H "
-           name=full(i+1:i+2)
-        endif
-        call elname(name,znum) 
-        write(17,*) "element:",name,znum
-     case("z_valence")
-!        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,valnum)
-        write(f2,'(A)')str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)
-        read(f2,*) r_valnum
-        valnum = nint(r_valnum) ! integer
-        if(abs(valnum-r_valnum)>1d-4)then;
-           write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
-           stop
-        endif
-        write(17,*) "valence:",valnum
-     case("l_max")
-        if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
-           stop "lmax <1!"
-        end if
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,lmax)
-        write(17,*) "L max=",lmax
-     case("is_ultrasoft")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           write(17,*) "Ultrasoft not supported!"
-           stop
-        end if
-     case("is_paw")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           write(17,*) "PAW not supported!"
-           stop
-        end if
-     case("functional")
-        str2=str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1) 
-        if(str2/='PW'.and.str2/='SLA-PW') then
-           write(6,*) "Error: Functional not supported!"
-           write(6,*) "Functional is:",str2
-           stop
-        end if
-     case("l_local")
-        if(len(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1))/=1) then
-           stop "lloc <10!"
-        end if
-        call str2int(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1),1,lloc)
-        !if(lloc/=2) stop "L=2 must be local!"
-        write(17,*) "L loc=",lloc
-     case("core_correction")
-        if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="T") then
-           core_c=.true.
-        else if(str1(scan(str1,'"')+1:scan(str1,'"',.true.)-1)=="F") then
-           core_c=.false.
-        else
-           stop ' core_correction ill defined, stopping '
-        end if
-     end select
-  end do header
+! Parse 'full'
+  call parse_section(full,fields,results)
+
+! Read until close bracket '>' is found
+  do while (index(full,">")==0)
+    read(001,"(A)") full
+    call parse_section(full,fields,results)
+  enddo
+
+! Extract the necessary fields from the list
+  call get_field(fields, results, 'element', str1)
+  name=str1(1:2)
+  call elname(name,znum)
+  write(17,*) "element:",name,znum
+
+  call get_field(fields, results, 'z_valence', str1)
+  r_valnum=string2real8(str1)
+  valnum = nint(r_valnum) ! integer
+  if (abs(valnum-r_valnum)>1d-4)then;
+     write(6,*)' error: valnum, r_valnum ',valnum,r_valnum
+     stop
+  endif
+  write(17,*) "valence:",valnum
+
+  call get_field(fields, results, 'is_ultrasoft', str1)
+  if (string2logical(str1)) then
+     write(6,*) "Pseudopotential problem: ultrasoft not supported!"
+     write(17,*) "Pseudopotential problem: ultrasoft not supported!"
+     stop
+  endif
+   
+  call get_field(fields, results, 'is_paw', str1)
+  if (string2logical(str1)) then
+     write(6,*) "Pseudopotential problem: PAW not supported!"
+     write(17,*) "Pseudopotential problem: PAW not supported!"
+     stop
+  endif
+   
+  call get_field(fields, results, 'functional', str1)
+  write(6,*) " Functional is: ",trim(adjustl(str1))
+
+  call get_field(fields, results, 'l_max', str1)
+  lmax=string2integer(str1)
+  write(17,*) "L max=",lmax
+
+  call get_field(fields, results, 'l_local', str1)
+  lloc=string2integer(str1)
+  write(17,*) "L loc=",lloc
+  call check_le(-1,lloc,' (-1)-lloc ')
+
+  call get_field(fields, results, 'core_correction', str1)
+  core_c=string2logical(str1)
+   
+  call get_field(fields, results, 'number_of_proj', str1)
+  np=string2integer(str1)
+  write(17,*) "Number of projections:",np
+  call check_lele(1,np,size(phipp,2),' 1-np-szphipp2 ')
+
+  call get_field(fields, results, 'mesh_size', str1)
+  lngth=string2integer(str1)
+  write(17,*) "Number of points:",lngth
+
+  deallocate(fields,results)
+
   call flush(17)
   !
   ! verifying that atom is among list of nuclei
@@ -269,25 +152,28 @@ subroutine read_upf(fname,znum,valnum)
      close(001)
      return
   endif
-  search_pp_r : do     
+
+  allocate(    grd(lngth),    stat=st); call check0(st,' grd     ')
+  allocate(vloc_rd(lngth),    stat=st); call check0(st,' vloc_rd ')
+  allocate( rho_cr(lngth),    stat=st); call check0(st,' r_core  ')
+  allocate(     dr(lngth),    stat=st); call check0(st,' dr      ')
+  allocate(    phi(lngth,np), stat=st); call check0(st,' phi     ')
+  allocate(    dij(np,np),    stat=st); call check0(st,' dij     ')
+  allocate(   nrmp(np),       stat=st); call check0(st,' nrmp    ')
+
+  search_pp_r : do
      read(001,"(A)") full
      if(index(full,"PP_R")/=0) exit search_pp_r
   enddo search_pp_r
-  
+
   read(full,*)str1,str2,str2
   if(index(str1,"PP_R")==0) stop "Problem reading PP_R!"
 
-  sz = len(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1))
-  call str2int(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1),sz,lngth)
-
-  write(17,*) "Number of points:",lngth; call flush(17)
-
-  allocate(      grd(lngth),       stat=st); call check0(st,' grd     ')
-  allocate(      phi(lngth,0:lmax),stat=st); call check0(st,' phi     ')
-  allocate(    vl_rd(lngth,0:lmax),stat=st); call check0(st,' vl_rd   ')
-  allocate(  vloc_rd(lngth),       stat=st); call check0(st,' vloc_rd ')
-  allocate(   rho_cr(lngth),       stat=st); call check0(st,' r_core  ')
   read(001,*) grd
+  ! make dr
+  dr(1)         = grd(2)-grd(1)
+  dr(lngth)     = grd(lngth)-grd(lngth-1)
+  dr(2:lngth-1) = (grd(3:lngth)-grd(1:lngth-2))/2d0
 
   core_correction(ma) = core_c
   if(core_c) then
@@ -312,42 +198,107 @@ subroutine read_upf(fname,znum,valnum)
   
   read(001,*) vloc_rd(:)
 
-  do 
+  !
+  !  Next: nonlocal part,
+  !
+  do
      read(001,*) str1
-     if(str1=="<PP_SEMILOCAL>") exit
+     if(str1=="<PP_NONLOCAL>") exit
   end do
 
-  do il = 0,lmax
-     if(il /= lloc) then
-        read(001,*) str1,str1,str1,str1,str2 
-        call str2int(str2(scan(str2,'"')+1:scan(str2,'"',.true.)-1),1,licn)
-        write(17,*) "Reading icnnel",licn
-        call check(il,licn,' il, licn ')
-        read(001,*) vl_rd(:,licn)
-        write(17,*)"First and Last potential point read for channel",licn," are: ",vl_rd(1,licn),&
-             vl_rd(lngth,licn)
-        read(001,*)
-     end if
-  end do
+  !
+  !  now need to read PP_BETA.1 ,  PP_BETA.2 , ... THEN: PP_DIJ ....
+  ! 
 
-  do 
-     read(001,*) str1
-     if(index(str1,"<PP_PSWFC>")/=0) exit
-  end do
-
-  do il = 0,lmax
-     search_closer : do
+  channeloop : do ii=1,np
+     ! read PP_BETA.  Header, angular momentum, and index
+     in = -1 ! index
+     il = -1 ! l
+     PP_Beta_header_search : do
         read(001,'(A)') full
-        if(index(full,'>')/=0) exit search_closer
-     end do search_closer
-     read(001,*) phi(:,il)
+        if(index(full,"<PP_BETA").ne.0) exit PP_Beta_header_search
+     end do PP_Beta_header_search
+
+     write(17,*) "Reading ichannel",ii
+     PP_BETA_next : do
+        i1 = index(full,"angular_momentum=")
+        if(i1/=0) then
+           write(f2,'(A)') full(i1+18:)
+           write(tmp,'(A)') f2(:index(f2,'"')-1)
+           read( tmp,*) il
+        endif
+
+        i1 = index(full," index")
+        if(i1/=0) then
+           write(f2,'(A)') full(i1+8:)
+           write(tmp,'(A)') f2(:index(f2,'"')-1)
+           read(tmp,*) in
+        end if
+
+        if(index(full,">").ne.0) exit PP_BETA_next
+        read(001,'(A)') full ! reading the next one
+     end do PP_BETA_next
+
+     ! now check that l and the index are correct. 
+     call check_lele(0,il,9,' 0-il-9 ')
+     call check(ii,in,' ii, in ')
+     lpp(in,ma)=il
+
+     ! read w.f.
+     read(001,*) phi(:,in)
+     !
+     ! print w.f. properties
+     write(17,*)' atom index=',ma,' index=',in
+     norm2 = sum(phi(:,in)**2*dr) !!! need dr
+     write(17,*)' <phi(:,in)|phi(:,in> ',norm2
+     if(abs(norm2-1d0)>1d-4) then
+        write(17,*)' potential problem:  in, l, <phi(:,in)|phi(:,in> ',in,il,norm2
+     endif
+     ! *grd**2 built within phi.
+
+     ! normalize phi
+     nrmp(in)=sqrt(norm2)
+     phi(:,in) = phi(:,in)/nrmp(in)
+
      read(001,'(A)') full
-     if(index(full,'</PP_CHI')==0) then 
-        write(6,*)' Error.  Should have read </PP_CHI but instead read: ',trim(full)
-        stop
+     if(index(full,'</PP_BETA')==0) then; write(6,*)' error , full=',full; stop
      end if
+  end do channeloop
+
+  !
+  !  now read PP_DIJ
+  ! 
+
+  read(001,'(A)') full
+  if(index(full,'<PP_DIJ')==0) stop ' error, no PP_DIJ '
+
+  end_dij : if(index(full,'>')==0) then
+     loopend : do
+        read(001,'(A)') full
+        if(index(full,'>')/=0) exit loopend
+     end do loopend
+  end if end_dij
+
+  read(001,*)dij
+  write(17,*)' unnormalized dij(in Rydberg) ',dij
+
+  !
+  ! check diagonality, extract diagonal value.  
+  !
+  call check_le(np, size(dij_diag,1),' np, diag_diag ')
+
+  do i1=1,np
+     do i2=1,np
+        dij(i1,i2) = nrmp(i1)*nrmp(i2)* dij(i1,i2)  ! normalize
+        if(i1==i2) then;
+           dij_diag(i1,ma) = dij(i1,i1) / 2d0  ! Rydberg to Hartree
+        else
+           if(abs(dij(i1,i2))>1d-6) stop ' dij not diagonal '
+        end if
+     end do
   end do
-  
+  write(17,*)' normalized dij_diag ',dij_diag(:np,ma)
+
   if(lmax>3) then
      write(6,*)' ERROR: the value of lmax read from pp is: ',lmax, ' higher than 3, max now '
      stop
@@ -355,35 +306,35 @@ subroutine read_upf(fname,znum,valnum)
 
   lpptop(ma)=min(lmax,lmx)
   lpploc(ma)=lloc
-
+  nproj( ma) = np
   call check_le(lngth,nrppmx,' lngth nrppmx ')
 
   vpploc(    1:lngth,  ma) = vloc_rd(1:lngth)/2.d0               ! Rydberg to Hartree     
   nrpp(                ma) = lngth
   rrpp(      1:lngth,  ma) = grd(1:lngth)
-  phipp(     1:lngth,:,ma) = 0d0
-  vlpp(      1:lngth,:,ma) = 0d0
 
   rho_core_a(:,        ma) = 0d0
   if(core_correction(ma))  rho_core_a(1:lngth,  ma) = rho_cr(1:lngth)
 
-  !write(6,*) "DEBUG: at =",ma,"sum rho_cr=",sum(rho_cr(1:lngth))
-
-  lloop : do il = 0,min(lmx,lmax)
-     if(il/=lloc) then
-        phipp(1:lngth,il,ma) =  phi(1:lngth,il)/grd(1:lngth)     ! note dividing by r 
-        vlpp( 1:lngth,il,ma) =  vl_rd(1:lngth,il)/2.d0           ! Rydberg to Hartree     
-     end if
-  end do lloop
+  phipp( 1:lngth,:,ma) = 0d0
+  do in=1,np
+     do ir=1,lngth
+        if(grd(ir)>1d-5) phipp(ir,in,ma) = phi(ir,in)/grd(ir)
+     enddo
+  end do
 
   call flush(17)
   close(001)
   deallocate(grd)
-  deallocate(phi)
-  deallocate(vl_rd)
   deallocate(vloc_rd)
+  deallocate(dr)
+  deallocate(phi)
+  deallocate(dij)
+  deallocate(nrmp)
 
-end subroutine read_upf
+!end subroutine read_upf
+
+contains
 
 subroutine elname(ccha_inp,ic)
   use ppm, only : an => atom_name, un=> atom_upper_name
@@ -420,11 +371,151 @@ subroutine elname(ccha_inp,ic)
   if(ic<1) stop ' Error: didnt find atom ' ! superflous, but always check.
 end subroutine elname
 
-subroutine str2int(str,n,num)
+integer function string2integer(str) result(num)
   implicit none
-  integer, intent(in) :: n
-  character(n)     :: str
-  integer          :: num
+  character(len=*) :: str
   read(str,*) num
-end subroutine str2int
+end function string2integer
 
+real*8 function string2real8(str) result(num)
+  implicit none
+  character(len=*) :: str
+  read(str,*) num
+end function string2real8
+
+logical function string2logical(str) result(val)
+  implicit none
+  character(len=*) :: str
+
+  call lower_the_case(str)
+
+  if (trim(adjustl(str))=='t' .or. trim(adjustl(str))=='true') then
+     val=.true.
+  elseif (trim(adjustl(str))=='f' .or. trim(adjustl(str))=='false') then
+     val=.false.
+  else
+     write(*,*) "string2logical(): must be 'true' or 'false', not ",str
+     stop ' string2logical(): bad input value'
+  endif
+end function string2logical
+
+subroutine parse_section(line,fields,results)
+   implicit none
+   character(len=*), intent(in) :: line
+   character(len=*), dimension(:), allocatable :: fields, results
+   character(len=80), dimension(:), allocatable :: field_tmp, result_tmp
+   character(len=80) :: field, val
+   character(len=1)  :: q
+   integer :: i,fi,ff,qi,qf,m,fct,itn
+   integer :: nfields, nresults
+
+   if (allocated(fields)) then
+      nfields=SIZE(fields)
+   else
+      nfields=0
+   endif
+
+   if (allocated(results)) then
+      nresults=SIZE(results)
+   else
+      nresults=0
+   endif
+
+   if (nresults/=nfields) &
+      stop ' parse_section(): nfields must equal nresults'
+
+   do itn=1,2
+      fct=0
+      m=1
+      fi=-1
+      ff=-1
+      q='$'
+      qi=-1
+      qf=-1
+      do while (m<1024)
+
+         if (line(m:m)=='=' .and. qi==-1) then
+            ff=m-1 ! field ends before equals
+            m=m+1
+            qi=m   ! result must begin with quote after equals
+            q=line(m:m)
+            if (q/='"'.and.q/="'") then ! select single or double quotes
+               write(*,*) 'parse_section(): quoted section must follow ='
+               stop
+            endif
+
+         elseif (line(m:m)==' ') then
+            if (qi==-1) then
+               fi=m+1 ! advance the field begin tag if not inside a result
+            endif
+
+         elseif (line(m:m)==q(1:1)) then
+            if (q(1:1)/='$') then ! finishing a field-result pair
+               qf=m
+               fct=fct+1
+               if (itn==2) then
+                  write(fields(nfields+fct),'(A)') line(fi:ff)
+                  write(results(nfields+fct),'(A)') line(qi+1:qf-1)
+               endif
+               fi=-1
+               ff=-1
+               q='$'
+               qi=-1
+               qf=-1
+            endif
+
+         endif
+         m=m+1
+      enddo
+
+!     Extend length of 'fields' by number found in this input line
+      if (itn==1) then
+         if (fct==0) exit
+         if (nfields>0) then
+            allocate(field_tmp(nfields),result_tmp(nfields))
+            field_tmp(1:nfields)=fields(1:nfields)
+            result_tmp(1:nfields)=results(1:nfields)
+            deallocate(fields,results)
+         endif
+         allocate(fields(nfields+fct),results(nfields+fct))
+         if (nfields>0) then
+            fields(1:nfields)=field_tmp(1:nfields)
+            results(1:nfields)=result_tmp(1:nfields)
+            deallocate(field_tmp,result_tmp)
+         endif
+
+      endif
+
+   enddo ! itn
+
+end subroutine parse_section
+
+subroutine get_field(fields, values, thefield, thevalue)
+  implicit none
+  character(len=*), dimension(:), intent(in) :: fields, values
+  character(len=*), intent(in)  :: thefield
+  character(len=*), intent(out) :: thevalue
+  character(len=1) :: q
+  integer :: i,nfields
+  logical :: found
+
+  nfields=SIZE(fields)
+
+  found=.false.
+  thevalue=''
+  do i=1,nfields
+    if (trim(adjustl(fields(i)))==trim(adjustl(thefield))) then
+       write(thevalue,'(A)') values(i)
+       found=.true.
+       EXIT
+    endif
+  enddo
+
+  if (.not.found) then
+     write(6,*) 'ERROR: could not find field ',thefield
+     stop ' input field not found'
+  endif
+
+end subroutine get_field
+
+end subroutine read_upf

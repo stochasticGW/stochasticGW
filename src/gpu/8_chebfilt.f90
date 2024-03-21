@@ -16,11 +16,11 @@
   subroutine chebfilt_pteta(n,ms,odd)
 
   use gwm,    only : na, ekn
-  use kb_mod, only : vp, ngs, mapkbg
+  use kb_mod, only : ngs, mapkbg, vp_hamann, nsuper_ianl, indx_ianl, start_ianl
   use device_mem_module, only : map_sp => map_sp_pteta
   use device_mem_module, only : pe, po, ptmp, qcr, qci, shscvks, cufft_plan_pteta, two_ov_dh
   use device_mem_module, only : device_setup, ffts_setup, filter_setup
-  use device_mem_module, only : scpsi, ialj, jss, nbtt, nalj
+  use device_mem_module, only : scpsi
   implicit none
   integer, intent(in) :: n,ms
   logical, intent(in) :: odd
@@ -34,8 +34,8 @@
 
   !$acc data present(pe,po,ptmp,ekn), &
   !$acc present(map_sp), &
-  !$acc present(ngs,vp,mapkbg), &
-  !$acc present(qcr,qci,shscvks,scpsi,ialj,jss,nbtt)
+  !$acc present(ngs,vp_hamann,mapkbg), &
+  !$acc present(qcr,qci,shscvks,scpsi,indx_ianl,start_ianl)
  
   call chbflt_l
   call chbflt_nl
@@ -129,7 +129,7 @@ contains
 
   subroutine chbflt_nl
     implicit none
-    integer :: i, igg, l, is, it, ia, nbt, jb, js
+    integer :: i, igg, l, is, it, ia, j
     real*8                  :: cer,cei
     complex*16, parameter   :: ci=(0d0,1d0)
     complex*16              :: ce
@@ -146,19 +146,17 @@ contains
        end do
     end do
 
-    !$acc data present(scpsi,ialj,nbtt,jss,vp)
+    !$acc data present(scpsi,vp_hamann,indx_ianl,start_ianl)
     if (odd) then
        !$acc parallel loop gang collapse(2) vector_length(160) async
        isoloop: do is=1,ms
-          loloop: do l=1,nalj
-             ia=ialj(l)
-             nbt=nbtt(l)
-             js=jss(l)
+          loloop: do l=1,nsuper_ianl
+             ia = indx_ianl(l,1)
 
              ce=0d0
              !$acc loop vector reduction(+:ce)
              do igg=1,ngs(ia)
-                ce=ce+pe(mapkbg(igg,ia),is)*vp(js+(igg-1)*nbt)
+                ce=ce+pe(mapkbg(igg,ia),is)*vp_hamann(start_ianl(l)+igg)
              enddo
              ce=ce*scpsi(l)
              cer=dble(ce)
@@ -167,26 +165,24 @@ contains
              !$acc loop vector
              do igg=1,ngs(ia)
                 it=mapkbg(igg,ia)
-                jb=js+(igg-1)*nbt
+                j=start_ianl(l)+igg
                 !$acc atomic
-                qcr(it,is) = qcr(it,is) + cer*vp(jb)
+                qcr(it,is) = qcr(it,is) + cer*vp_hamann(j)
                 !$acc atomic
-                qci(it,is) = qci(it,is) + cei*vp(jb)
+                qci(it,is) = qci(it,is) + cei*vp_hamann(j)
              end do
           end do loloop
        end do isoloop
     else
        !$acc parallel loop gang collapse(2) vector_length(160) async
        iseloop: do is=1,ms
-          leloop: do l=1,nalj
-             ia=ialj(l)
-             nbt=nbtt(l)
-             js=jss(l)
+          leloop: do l=1,nsuper_ianl
+             ia = indx_ianl(l,1)
 
              ce=0d0
              !$acc loop vector reduction(+:ce)
              do igg=1,ngs(ia)
-                ce=ce+po(mapkbg(igg,ia),is)*vp(js+(igg-1)*nbt)
+                ce=ce+po(mapkbg(igg,ia),is)*vp_hamann(start_ianl(l)+igg)
              enddo
              ce=ce*scpsi(l)
              cer=dble(ce)
@@ -195,11 +191,11 @@ contains
              !$acc loop vector
              do igg=1,ngs(ia)
                 it=mapkbg(igg,ia)
-                jb=js+(igg-1)*nbt
+                j=start_ianl(l)+igg
                 !$acc atomic
-                qcr(it,is) = qcr(it,is) + cer*vp(jb)
+                qcr(it,is) = qcr(it,is) + cer*vp_hamann(j)
                 !$acc atomic
-                qci(it,is) = qci(it,is) + cei*vp(jb)
+                qci(it,is) = qci(it,is) + cei*vp_hamann(j)
              end do
           end do leloop
        end do iseloop

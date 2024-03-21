@@ -25,7 +25,7 @@ module device_mem_module
   integer(kind=cuda_stream_kind) :: stream_g
   integer :: nalj
   integer, parameter :: cnk = 200
-  integer, allocatable    :: ialj(:), jss(:), nbtt(:), map_sp_pteta(:)
+  integer, allocatable    :: map_sp_pteta(:)
   real*8,  allocatable    :: qr(:,:,:), qi(:,:,:), nrmarray(:,:)
   real*8,  allocatable    :: qcr(:,:), qci(:,:), shscvks(:,:), scpsi(:)
   real*8  :: two_ov_dh
@@ -47,75 +47,37 @@ contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! Allocates arrays for device propdt_pt module
 
-      use gwm,    only : na, dv, dt, dh
-      use kb_mod, only : lpptop, lpploc, mapai, iub, ngs, vp
-      use kb_mod, only : vp, pvp
-      logical, intent(in)     :: chebfacs
-      complex*16, allocatable :: ovdevtmp(:)
-      integer, allocatable    :: iatmp(:), jsstmp(:), nbttmp(:)
-      integer :: ma, igg, k, l, j, ib, it, ia, nbt, jb, js
-      real*8, parameter  :: toll_o = 1d-8
-      real*8  :: dot
-      complex*16, parameter   :: ci=(0d0,1d0)
-      complex*16              :: fac
+      use gwm,    only : dv, dt, dh
+      use kb_mod, only : nsuper_ianl
+      use kb_mod, only : indx_ianl
+      use kb_mod, only : dij_diag
+      use kb_mod, only : mapai
+      logical, intent(in)    :: chebfacs
+      integer               :: k, j, i, ia, ma
+      complex*16, parameter :: ci=(0d0,1d0)
+      complex*16            :: fac
       
       fac=-ci*dt/2d0
       two_ov_dh=2d0/dh
 
-      ALLOCATE(ovdevtmp(16*na),iatmp(16*na),jsstmp(16*na),nbttmp(16*na))
-
-      k=1
-      do ia=1,na
-         ma=mapai(ia)
-         ! determine starting point "u" for different l
-         jb=iub(ia)
-         do l=0,lpptop(ma)
-            if (l/=lpploc(ma))then
-               ib=l**2     ! 0,1,4,9
-               it=ib+2*l   ! 0,3,8,15
-               nbt=it-ib+1 ! 1,3,5,7
-
-               ! ov=<vphi|vphi> in 3d.
-               do j=ib,it
-                  js=jb+(j-ib)
-
-                  if (chebfacs) then
-                     ovdevtmp(k) = dv * two_ov_dh / pvp(l,ma)
-                  else
-                     dot=0d0
-                     do igg=1,ngs(ia)
-                        dot= dot + vp(js+(igg-1)*nbt)**2
-                     enddo
-                     ovdevtmp(k) = max(dot*dv,toll_o)
-                     ovdevtmp(k) = dv / ovdevtmp(k) * &
-                     (exp(fac*ovdevtmp(k) / pvp(l,ma))-1d0)
-                  endif
-
-                  iatmp(k)=ia
-                  jsstmp(k)=js
-                  nbttmp(k)=nbt
-                  k=k+1
-              enddo
-              jb=jb+nbt*ngs(ia)
-            endif
-         enddo
-      enddo
-
-!     Resize atom-l-j arrays
-      nalj=k-1
-      ALLOCATE(ialj(nalj),jss(nalj),nbtt(nalj))
-      ialj(1:nalj)=iatmp(1:nalj)
-      jss(1:nalj)=jsstmp(1:nalj)
-      nbtt(1:nalj)=nbttmp(1:nalj)
       if (chebfacs) then
-         allocate(scpsi(nalj))
-         scpsi(1:nalj)=REAL(ovdevtmp(1:nalj))
+         allocate(scpsi(nsuper_ianl))
       else
-         allocate(ovdev(nalj))
-         ovdev(1:nalj)=ovdevtmp(1:nalj)
+         allocate(ovdev(nsuper_ianl))
       endif
 
-      DEALLOCATE(ovdevtmp,iatmp,jsstmp,nbttmp)
+      k=1
+      do j=1,nsuper_ianl
+         ia = indx_ianl(j,1)
+         i  = indx_ianl(j,2)
+         ma = mapai(ia)
+         if (chebfacs) then
+            scpsi(k) = dv * two_ov_dh * dij_diag(i,ma)
+         else
+            ovdev(k) = dv * (exp(fac*dij_diag(i,ma))-1d0)
+         endif
+         k=k+1
+      enddo
 
       end subroutine precompute_ovdev
 
@@ -166,7 +128,7 @@ contains
 
       use gwm,    only : n, ns, nsp, sp0, dh, havg
       use gwm,    only : vks, ekn, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
@@ -205,7 +167,7 @@ contains
 
       !$acc enter data create(qcr,qci,pe,po,ptmp) &
       !$acc copyin(shscvks,ekn,map_sp_pteta) &
-      !$acc copyin(mapkbg,ngs,vp,scpsi,ialj,jss,nbtt)
+      !$acc copyin(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
 
       filter_setup=.TRUE.
 
@@ -219,23 +181,20 @@ contains
 ! Dellocates arrays for device propdt_pt module
 
       use gwm,    only : ekn
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
 
       !$acc exit data delete(pe,po,ptmp,qcr,qci) & 
       !$acc delete(shscvks,ekn,map_sp_pteta) &
-      !$acc delete(mapkbg,ngs,vp,scpsi,ialj,jss,nbtt)
+      !$acc delete(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
 
       deallocate(shscvks, stat=st); if (st/=0) stop ' deallocate shscvks '
       deallocate(pe,po,ptmp, stat=st); if (st/=0) stop ' deallocate pe,po,ptmp '
       deallocate(qcr,qci, stat=st); if (st/=0) stop ' deallocate qr, qi '
       deallocate(map_sp_pteta, stat=st); if(st/=0) stop ' deallocate map_sp_pteta '
       deallocate(scpsi, stat=st); if (st/=0) stop ' deallocate scpsi '
-      deallocate(ialj, stat=st); if (st/=0) stop ' deallocate ialj '
-      deallocate(jss, stat=st); if (st/=0) stop ' deallocate jss '
-      deallocate(nbtt, stat=st); if (st/=0) stop ' deallocate nbtt '
 
       filter_setup=.FALSE.
       
@@ -250,7 +209,7 @@ contains
 
       use gwm,    only : n, ns, nsp, na
       use gwm,    only : expnk, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
@@ -280,7 +239,7 @@ contains
 
       !$acc enter data create(pt0,expvks,qr,qi,nrmarray) &
       !$acc copyin(expnk,map_sp_pt) &
-      !$acc copyin(mapkbg,ngs,vp,ovdev,ialj,jss,nbtt)
+      !$acc copyin(mapkbg,ngs,vp_hamann,ovdev,indx_ianl,start_ianl)
 
       propdtpt_setup=.TRUE.
 
@@ -294,23 +253,20 @@ contains
 ! Dellocates arrays for device propdt_pt module
 
       use gwm,    only : expnk, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
 
       !$acc exit data delete(pt0,expvks,qr,qi,nrmarray) & 
       !$acc delete(expnk,map_sp_pt) &
-      !$acc delete(mapkbg,ngs,vp,ovdev,ialj,jss,nbtt)
+      !$acc delete(mapkbg,ngs,vp_hamann,ovdev,indx_ianl,start_ianl)
 
       deallocate(pt0, stat=st); if (st/=0) stop ' deallocate pt0 '
       deallocate(expvks, stat=st); if (st/=0) stop ' deallocate expvks '
       deallocate(qr,qi, stat=st); if (st/=0) stop ' deallocate qr, qi '
       deallocate(nrmarray, stat=st); if (st/=0) stop ' deallocate nrmarray '
       deallocate(ovdev, stat=st); if (st/=0) stop ' deallocate ovdev '
-      deallocate(ialj, stat=st); if (st/=0) stop ' deallocate ialj '
-      deallocate(jss, stat=st); if (st/=0) stop ' deallocate jss '
-      deallocate(nbtt, stat=st); if (st/=0) stop ' deallocate nbtt '
 
       propdtpt_setup=.FALSE.
       

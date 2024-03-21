@@ -22,7 +22,7 @@ subroutine nrppmx_read
   logical               :: rdnrppmx       =.false.
 
   rnk0: if(rank==0) then
-     nrppmx=1200
+     nrppmx=2000
      
      open(101,file=trim(inputfname),iostat=inpstat)
      if(inpstat /= 0) stop "PROBLEM READING INPUT FILE"

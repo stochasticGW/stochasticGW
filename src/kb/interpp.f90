@@ -11,27 +11,29 @@
 !   the header should be kept, unmodified.          
 !                                                   
 !                                                   
-!                                                   
-subroutine interp_lin(ri, vi, ra, va, nr)
+!                                         
+subroutine interpp(ra, pb, ma, np)
+  use kb_mod, only : rr=>rrpp, nr=>nrpp
+  use kb_mod, only : ff=>phipp
   implicit none
-  integer j, k, jm, l, nr
-  real*8 vi, ra(nr), va(nr)
-  real*8 ri, ddr, dr
-
-  if(ri<ra(1)) then
-     vi = va(1)
+  integer j,k,jm,ma,np
+  real*8 ra, ddr, dr
+  real*8 pb(1:np)
+  
+  if(ra<rr(1,ma)) then
+     pb(1:np) = ff(1,1:np,ma) 
      return
-  elseif(ri>ra(nr)) then
-     vi  = va(nr) * ra(nr)/ri
+  elseif(ra>rr(nr(ma),ma)) then
+     pb(1:np) = 0d0 
      return
   end if
   
   j=1
-  k=nr
+  k=nr(ma)
   searchi : do 
      if(k-j>1) then
         jm = (j+k)/2
-        if(ri<ra(jm)) then
+        if(ra<rr(jm, ma)) then
            k=jm
         else
            j=jm
@@ -40,16 +42,13 @@ subroutine interp_lin(ri, vi, ra, va, nr)
         exit searchi
      end if
   end do searchi
-  call check(k-1,j,' k-1, j ')
   
   ! determined the point below r. 
   ! now linear interpolation
+  call check(k,j+1,' k,j+1 ')
   
-  ddr = ri    -ra(j)
-  dr  = ra(k) -ra(j)
+  ddr = ra      -rr(j,ma)
+  dr  = rr(k,ma)-rr(j,ma)
   
-  vi  = va(j)  * (dr-ddr)/dr + va(k) * ddr/dr
-end subroutine interp_lin
-
-
-
+  pb(1:np) = ff(j,1:np,ma)  * (dr-ddr)/dr + ff(k,1:np,ma) * ddr/dr
+end subroutine interpp

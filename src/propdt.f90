@@ -81,9 +81,10 @@ subroutine propnl(p,n,ms)
 
   allocate(q(n,ms), stat=st); call check0(st,' q-alloc ' )
   q = 0d0
-  do ia=1,na
-     call prop_nl_a(p,q, n,ms,ia)
-  enddo
+!  do ia=1,na
+!     call prop_nl_a(p,q, n,ms,ia)
+!  enddo
+  call prop_nl_hamann(p,q,n,ms)
   p=p+q
   deallocate(q)
 end subroutine propnl

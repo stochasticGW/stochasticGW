@@ -16,18 +16,6 @@ subroutine kb_alloc
   use kb_mod
   implicit none
   allocate(ngs( na),              stat=st); call check0(st,' ngs ')
-  allocate(iub( na),              stat=st); call check0(st,' iub ')
-  allocate(iut( na),              stat=st); call check0(st,' iut ')
   allocate(racut_a(       matop), stat=st); call check0(st,' racut_a ')
-  allocate(pvp(    0:lmx, matop), stat=st); call check0(st,' vkb_nrmlz ')
 end subroutine kb_alloc
 
-subroutine kb_alloc_vp
-  use kb_mod,     only : iumx, vp, st
-  implicit none
-  allocate(vp(iumx),  stat=st);  call check0(st,' vp       ')
-end subroutine kb_alloc_vp
-
-  
-  
-  

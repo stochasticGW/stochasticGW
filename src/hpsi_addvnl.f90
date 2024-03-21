@@ -26,7 +26,9 @@ subroutine addvnl_c(p,hp,n,ms,cnst)
     write(6,*) "ERROR: ONLY SPIN UNPOLARIZED CALCULATION IMPLEMENTED!"
     call flush(6)
   end if
-  do ia=1,na
-    call addvnl_c_kb(p,hp,n,ms,cnst,ia)
-  enddo
+!  do ia=1,na
+!    call addvnl_c_kb(p,hp,n,ms,cnst,ia)
+!  enddo
+  call addvnl_c_hamann(p,hp,n,ms,cnst)
+
 end subroutine addvnl_c
