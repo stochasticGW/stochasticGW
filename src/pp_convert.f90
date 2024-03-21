@@ -62,6 +62,7 @@ subroutine read_upf(fname,znum,valnum)
   real*8,allocatable:: dij(:,:),phi(:,:),nrmp(:),dr(:)
   real*8            :: test, pi, r_valnum, norm2
 
+
   pi = dacos(-1d0)
 
   open(001,file='PP/'//trim(fname))
@@ -140,6 +141,7 @@ subroutine read_upf(fname,znum,valnum)
   write(17,*) "Number of points:",lngth
 
   deallocate(fields,results)
+
   call flush(17)
   !
   ! verifying that atom is among list of nuclei
