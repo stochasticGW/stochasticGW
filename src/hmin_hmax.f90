@@ -66,6 +66,13 @@ subroutine h_minmax
   do ii = 1,200
      p1=0d0; call hc(pa, p1, vks, n, 1)
      ee = sum(conjg(pa)*p1*dv)/sum(conjg(pa)*pa*dv)
+
+     if (mod(ii,10).eq.1) then
+        if(rank==0) then
+           write(17,*) ' itn: ',ii,' ee_extreme ',ee; call flush(17)
+        endif
+     endif
+
      pa=p1/sqrt(sum(abs(p1)**2)*dv)
   end do
 
@@ -82,6 +89,13 @@ subroutine h_minmax
      p1=0d0; call hc(pa, p1, vks, n, 1)
      p1 = p1- ee*pa
      ee2 = sum(conjg(pa)*p1*dv)/sum(conjg(pa)*pa*dv)
+
+     if (mod(ii,10).eq.1) then
+        if(rank==0) then
+           write(17,*) ' itn: ',ii,' ee_other ',ee2; call flush(17)
+        endif
+     endif
+
      pa=p1/sqrt(sum(abs(p1)**2)*dv)
   enddo
 
