@@ -13,7 +13,17 @@
 !                                                   
 !                                                  
 subroutine improve_hmin_hmax
-  use gwm, only : rddh
+  use gwm, only : rddh, usegpu
   implicit none
-  if(.not.rddh)  call h_minmax
+  if (.not.rddh) then
+#if GPU_ENABLED
+    if (.not.usegpu) then
+
+    else
+!       call hmin_hmax_gpu
+    endif
+#endif
+    call h_minmax
+  endif
+
 end subroutine improve_hmin_hmax

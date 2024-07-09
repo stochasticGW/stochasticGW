@@ -32,9 +32,6 @@ subroutine gw_core
   call calc_gge
   call write_ge
   call allocate_calc_del_zeta  ! del, zeta: calc. in eta_rank, distributed.
-#if GPU_ENABLED
-  if (usegpu) call init_device
-#endif
 
   !
   ! all cores in a given color will project for psi representing W

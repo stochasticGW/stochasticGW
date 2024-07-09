@@ -85,7 +85,7 @@ subroutine h_minmax
   call rand_c(pa,n,dv)
   pa=pa/sqrt(sum(abs(pa)**2*dv))
      
-  do ii = 1, 200
+  do ii = 1,200
      p1=0d0; call hc(pa, p1, vks, n, 1)
      p1 = p1- ee*pa
      ee2 = sum(conjg(pa)*p1*dv)/sum(conjg(pa)*pa*dv)

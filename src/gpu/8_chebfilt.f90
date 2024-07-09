@@ -13,24 +13,25 @@
 !                                                   
 !                                                   
 
-  subroutine chebfilt_pteta(n,ms,odd)
+  subroutine chebfilt_pteta(n,ms,odd,short)
 
   use gwm,    only : na, ekn
   use kb_mod, only : ngs, mapkbg, vp_hamann, nsuper_ianl, indx_ianl, start_ianl
   use device_mem_module, only : map_sp => map_sp_pteta
-  use device_mem_module, only : pe, po, ptmp, qcr, qci, shscvks, cufft_plan_pteta, two_ov_dh
-  use device_mem_module, only : device_setup, ffts_setup, filter_setup
-  use device_mem_module, only : scpsi
+  use device_mem_module, only : pe, po, ptmp, qcr, qci, shscvks, cufft_plan_filt
+  use device_mem_module, only : device_setup, ffts_setup, filter_setup, hmin_hmax_setup
+  use device_mem_module, only : scpsi, two_ov_dh
   implicit none
   integer, intent(in) :: n,ms
-  logical, intent(in) :: odd
+  logical, intent(in) :: odd, short
 
   ! The 'odd' flag replaces pe (.F.) or po (.T.); this is a workaround which is
   ! necessary since dynamic pointer mapping causes unwanted host->device copies
 
   if (.not.device_setup) stop ' chebfilt_pteta(): device not setup'
   if (.not.ffts_setup) stop ' chebfilt_pteta(): ffts not setup'
-  if (.not.filter_setup) stop ' chebfilt_pteta(): filter module not setup'
+  if (.not.filter_setup .and. .not.hmin_hmax_setup) &
+     stop ' chebfilt_pteta(): hmin_hmax or filter module not setup'
 
   !$acc data present(pe,po,ptmp,ekn), &
   !$acc present(map_sp), &
@@ -76,19 +77,26 @@ contains
     use cufft
 
     implicit none
-    integer :: i,is
+    integer :: i,is,plan
     integer(4) :: cerr
     real*8     :: ekntmp
+
+!   Select the cufft plan
+    if (short) then
+       plan=2
+    else
+       plan=1
+    endif
 
     !$acc data present(pe,po,ptmp)
     if (odd) then
        !$acc host_data use_device(pe,ptmp)
-       cerr = cufftExecZ2Z(cufft_plan_pteta,pe,ptmp,CUFFT_FORWARD)
+       cerr = cufftExecZ2Z(cufft_plan_filt(plan),pe,ptmp,CUFFT_FORWARD)
        !$acc end host_data
        if (cerr/=0) stop ' chbflt_k(): problem with cutfft_forward (odd)'
     else
        !$acc host_data use_device(po,ptmp)
-       cerr = cufftExecZ2Z(cufft_plan_pteta,po,ptmp,CUFFT_FORWARD)
+       cerr = cufftExecZ2Z(cufft_plan_filt(plan),po,ptmp,CUFFT_FORWARD)
        !$acc end host_data
        if (cerr/=0) stop ' chbflt_k(): problem with cutfft_forward (even)'
     endif
@@ -104,7 +112,7 @@ contains
     !$acc end data
 
     !$acc host_data use_device(ptmp)
-    cerr = cufftExecZ2Z(cufft_plan_pteta,ptmp,ptmp,CUFFT_INVERSE)
+    cerr = cufftExecZ2Z(cufft_plan_filt(plan),ptmp,ptmp,CUFFT_INVERSE)
     !$acc end host_data
     if (cerr/=0) stop ' chbflt_k(): problem with cutfft_inverse'
 
