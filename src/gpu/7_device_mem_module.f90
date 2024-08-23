@@ -34,11 +34,13 @@ module device_mem_module
   real*8  :: two_ov_dh
   complex*16, allocatable :: pe(:,:), po(:,:), pa(:,:), ptmp(:,:)
   complex*16, allocatable :: pt0(:,:,:), expvks(:,:,:), ovdev(:)
+  logical :: curand_host_test=.FALSE.
   logical :: device_setup=.FALSE.
   logical :: rand_dev_setup=.FALSE.
   logical :: ffts_setup=.FALSE.
   logical :: hmin_hmax_setup=.FALSE.
   logical :: filter_setup=.FALSE.
+  logical :: gam_dev_setup=.FALSE.
   logical :: propdtpt_setup=.FALSE.
   logical :: vomake_setup=.FALSE.
   logical :: makecudagraph=.FALSE.
@@ -293,6 +295,35 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+      subroutine init_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Allocates arrays for gamma function modules
+      use gwm, only : gam, seg, ngam
+
+      implicit none
+
+!     Check global arrays for allocation status; allocate local arrays
+      if (.not.allocated(gam)) stop ' gam not allocated'
+
+      if (SIZE(gam,1).ne.seg .or. SIZE(gam,2).ne.ngam) then
+         write(*,'(X,4(A,I0),A)') 'gam must be (',seg,' x ',ngam,&
+                                  ') but is (',SIZE(gam,1),' x ',SIZE(gam,2),')'
+         stop ' init_vomake_device(): wrong size: gam'
+      endif
+
+      if (.not.curand_host_test) then
+         !$acc enter data create(gam)
+      endif
+
+      ! Note that 'gam' is removed from device in flush_vomake_device()
+
+      gam_dev_setup=.TRUE.
+
+      end subroutine init_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       subroutine init_propdtpt_device
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -407,7 +438,10 @@ contains
       endif
 
 !     Used by both 8_vr.f90 and 8_ct.f90:
-      !$acc enter data copyin(vks,gam,seg_sh,seg_w) &
+      if (curand_host_test) then
+         !$acc enter data copyin(gam)
+      endif
+      !$acc enter data copyin(vks,seg_sh,seg_w) &
       !$acc create(ft)
 
       vomake_setup=.TRUE.
@@ -429,6 +463,7 @@ contains
       !$acc exit data delete(vks,gam,seg_sh,seg_w,ft)
 
       vomake_setup=.FALSE.
+      gam_dev_setup=.FALSE.
 
       end subroutine flush_vomake_device
 
@@ -442,10 +477,15 @@ contains
       implicit none
       integer(4) :: cerr
 
-      cerr = curandCreateGenerator(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
-      if (cerr/=0) stop 'Error creating curand_plan_gam'
-      cerr = curandSetStream(curand_plan_gam, stream_g)
-      if (cerr/=0) stop ' problem in curandSetStream for curand_plan_gam'
+      if (.not.curand_host_test) then
+         cerr = curandCreateGenerator(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
+         if (cerr/=0) stop 'Error creating curand_plan_gam for device'
+         cerr = curandSetStream(curand_plan_gam, stream_g)
+         if (cerr/=0) stop ' problem in curandSetStream for curand_plan_gam'
+      else
+         cerr = curandCreateGeneratorHost(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
+         if (cerr/=0) stop 'Error creating curand_plan_gam for host'
+      endif
 
       rand_dev_setup=.TRUE.
 

@@ -82,6 +82,9 @@ contains
     if (usegpu) call init_device
 #endif
     if(filter_cheby .and. .not.rdhavg)  call improve_hmin_hmax
+#if GPU_ENABLED
+    if (usegpu) call flush_device
+#endif
     if(filter_cheby) call set_theta
     !call exchange_set 
     call prnt_time_mpi(" preparation ",tstart)

@@ -12,7 +12,7 @@
 !                                                   
 !                                                   
 !    
-subroutine gam_prep_gpu
+subroutine gam_prep_curand_gpu
   use gwm
   use device_mem_module
   use curand
@@ -22,12 +22,13 @@ subroutine gam_prep_gpu
   real*8  :: fac
   integer :: i,j
 
-! Error handling
-  if (.not.rand_dev_setup) stop ' gam_prep_gpu(): curand not set up'
+  if (.not.rand_dev_setup) stop ' gam_prep_curand_gpu(): curand not set up'
+  if (.not.gam_dev_setup) call init_gam_device
 
   fac=2.d0*dsqrt(3d0/dv)
 
-  !$acc data copyout(gam)
+  ! acc data copyout(gam)
+  !$acc data present(gam)
 
   !$acc host_data use_device(gam)
   cerr = curandGenerate(curand_plan_gam, gam, seg*ngam)
@@ -42,9 +43,4 @@ subroutine gam_prep_gpu
   !$acc wait
   !$acc end data
 
-!  write(*,*) 'Gamma test'
-!  do i=1,50
-!     write(*,*) i,gam(i,1),gam(i,2),gam(i,3),gam(i,4)
-!  enddo
-
-end subroutine gam_prep_gpu
+end subroutine gam_prep_curand_gpu

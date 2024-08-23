@@ -28,8 +28,8 @@ subroutine xc_expect
 end subroutine xc_expect
 
 ! this subroutine is extremely inefficient; but that may be OK
-!  To optimzie it -- repalce the two vh calcualtions (4 ffts) by a single fft on a big grid
-! Also, put it all on the kernel replaincg ne*ne transfers by ne+n
+!  To optimize it -- replace the two vh calculations (4 ffts) by a single fft on a big grid
+! Also, put it all on the kernel replacing ne*ne transfers by ne+n
 ! also, reduce ne.
 ! At present, speed is not an issue.
 

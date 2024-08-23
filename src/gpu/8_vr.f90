@@ -33,8 +33,8 @@ subroutine vo_make_gpu
   if (ngam<1) stop ' vo_make_gpu(): ngam < 1 '
   if (.not.device_setup) stop ' vo_make_gpu(): device not setup'
   if (.not.ffts_setup) stop ' vo_make_gpu(): ffts not setup'
-  if (.not.propdtpt_setup) stop ' vo_make_gpu(): propdtpt not setup'
-  if (.not.vomake_setup) stop ' vo_make_gpu(): vomake not setup'
+  if (.not.propdtpt_setup) call init_propdtpt_device 
+  if (.not.vomake_setup) call init_vomake_device
   if (.not.allocated(pt)) stop ' vo_make_gpu(): pt not allocated'
   if (.not.allocated(del)) stop ' vo_make_gpu(): del not allocated'
   if (.not.allocated(vk)) stop ' vo_make_gpu(): vk not allocated'

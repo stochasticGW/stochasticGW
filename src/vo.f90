@@ -12,10 +12,22 @@
 !                                                   
 !                                                   
 !                                                   
-subroutine vo_make     
+subroutine vo_make
+  use gwm
   implicit none
+
+#if GPU_ENABLED
+  if (.not.usegpu) then ! CPU version
+     call vr_make
+     call vr_to_vo
+  else
+     call vo_make_gpu
+  endif
+#else
   call vr_make 
   call vr_to_vo
+#endif
+
 end subroutine vo_make
   
 subroutine vr_to_vo
