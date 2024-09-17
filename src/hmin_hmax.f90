@@ -15,12 +15,14 @@
 subroutine h_minmax
   use gwm, only : n, dv, dhscl, dh, havg, hmin, hmax
   use gwm, only : vks, imc, tp, nchbmx
+  use gwm, only : powr_maxit, powr_ftol
 !  use gwm, only : functional, de_bnl
   use simple_mpi, only : rank, bcast_scalar_r8
   implicit none
   integer, save :: i1=1
   integer       :: ii!, isp
   real*8        :: ee,ee2
+  real*8        :: oldrayqt,conver
   complex*16    :: c21,c12
   complex*16,allocatable :: pa(:),pb(:),p1(:),tmp(:)
   if(i1/=1)   return
@@ -59,21 +61,26 @@ subroutine h_minmax
   endif
 
   !Now - power iter.
+  oldrayqt=0.d0
   pa=0.d0; pb=0.d0;tmp=0.d0
   call rand_c(pa,n,dv)
   pa=pa/sqrt(sum(abs(pa)**2)*dv)
   
-  do ii = 1,200
+  do ii=0,powr_maxit
      p1=0d0; call hc(pa, p1, vks, n, 1)
      ee = sum(conjg(pa)*p1*dv)/sum(conjg(pa)*pa*dv)
 
-     if (mod(ii,10).eq.1) then
+     if (mod(ii,10).eq.0) then
+        conver=abs((oldrayqt-ee)/ee)
+        oldrayqt=ee
         if(rank==0) then
-           write(17,*) ' itn: ',ii,' ee_extreme ',ee; call flush(17)
+          write(17,'(X,A,X,I5,X,A,X,f15.8,X,A,X,ES10.3,X)') &
+          'itn:',ii,'ee_extreme',ee,'fdel',conver; call flush(17)
         endif
      endif
 
      pa=p1/sqrt(sum(abs(p1)**2)*dv)
+     if (conver.le.powr_ftol) exit
   end do
 
   if(rank==0) then
@@ -81,22 +88,27 @@ subroutine h_minmax
   endif
   
   ! now the other extreme eigenvalue
+  oldrayqt=0.d0
   pa=0d0
   call rand_c(pa,n,dv)
   pa=pa/sqrt(sum(abs(pa)**2*dv))
      
-  do ii = 1,200
+  do ii=0,powr_maxit
      p1=0d0; call hc(pa, p1, vks, n, 1)
      p1 = p1- ee*pa
      ee2 = sum(conjg(pa)*p1*dv)/sum(conjg(pa)*pa*dv)
 
-     if (mod(ii,10).eq.1) then
+     if (mod(ii,10).eq.0) then
+        conver=abs((oldrayqt-ee2)/ee2)
+        oldrayqt=ee2
         if(rank==0) then
-           write(17,*) ' itn: ',ii,' ee_other ',ee2; call flush(17)
+           write(17,'(X,A,X,I5,X,A,X,f15.8,X,A,X,ES10.3,X)') &
+           'itn:',ii,'ee_other',ee2,'fdel',conver; call flush(17)
         endif
      endif
 
      pa=p1/sqrt(sum(abs(p1)**2)*dv)
+     if (conver.le.powr_ftol) exit
   enddo
 
   hmin = min(ee,ee+ee2)

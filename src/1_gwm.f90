@@ -72,6 +72,7 @@ module gwm
   integer :: ntop
   integer :: gamflg
   integer :: seg
+  integer :: powr_maxit
   integer :: nchbmx=-1
   integer :: nchbc
   integer :: ngam_nzero_blk
@@ -101,6 +102,7 @@ module gwm
   real*8 :: mxmem_vo
   real*8 :: seg_fctr
   real*8 :: seg_frctn
+  real*8 :: powr_ftol
   real*8 :: hmin
   real*8 :: hmax
   real*8 :: dhscl

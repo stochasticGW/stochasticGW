@@ -69,6 +69,8 @@ subroutine read_input_vars !(inputfname).
   logical       :: rdlumo         =.false.
   logical       :: rdnj           =.false.
   logical       :: rdjidx         =.false.
+  logical       :: rdpowr_maxit   =.false.
+  logical       :: rdpowr_ftol    =.false.
   logical       :: rddisable_gpu_hminmax = .false.
   logical       :: rddisable_gpu_filter  = .false.
   logical       :: rddisable_gpu_gam     = .false.
@@ -129,6 +131,8 @@ subroutine read_input_vars !(inputfname).
      dh           =    1d0 ! will be read or determined
      dhscl        = 1.05d0
      Tp           = 0.01
+     powr_maxit   = 200 
+     powr_ftol    = 1.d-16
 
      disable_gpu_hminmax = .false.
      disable_gpu_filter  = .false.
@@ -290,7 +294,15 @@ subroutine read_input_vars !(inputfname).
            if(rdfilter)stop 'ERROR: ALREADY READ projection'; rdfilter =.true.
            read(101,*,iostat=inpstat) proj
            filter_cheby = .not.proj
-           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: projection "
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: projection"
+        case('powr_maxit')
+           if(rdpowr_maxit)stop 'ERROR: ALREADY READ powr_maxit '; rdpowr_maxit =.true.
+           read(101,*,iostat=inpstat) powr_maxit
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: powr_maxit"
+        case('powr_ftol')
+           if(rdpowr_ftol)stop 'ERROR: ALREADY READ powr_ftol '; rdpowr_ftol =.true.
+           read(101,*,iostat=inpstat) powr_ftol
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: powr_ftol"
         case('tp')
            if(rdtp)stop 'ERROR: ALREADY READ Tp '; rdTp =.true.
            read(101,*,iostat=inpstat) Tp
@@ -447,11 +459,12 @@ subroutine read_input_vars !(inputfname).
      case default; stop ' ERROR: box should be "pos" or "sym" '
      end select
 
+     if(powr_maxit<1.and.filter_cheby)   stop "ERROR:powr_maxit must be > 0"
      if(dhscl<1d0)                       stop "ERROR: dhscl SHOULD BE >= 1.0 "
      if(Tp<0d0)                          stop "ERROR: Tp should be positive "
      if(rdmu.and..not.filter_cheby)      stop "ERROR: dont give mu if projection is on"
      if(rdnchb) toll = 1d5 !to allow nchb to be whatever value set
-     if (rdhomo .and. rdlumo .and. (lumo .le. homo)) stop " LUMO must be greater than HOMO"
+     if(rdhomo .and. rdlumo .and. (lumo .le. homo)) stop " LUMO must be greater than HOMO"
 
      if (rdjidx) then
         read_jidx_input=.TRUE.
@@ -525,6 +538,7 @@ subroutine bcast_variables
   call bcast_scalar_i(funct_x)
   call bcast_scalar_i(funct_c)
   call bcast_scalar_i(nchbmx)
+  call bcast_scalar_i(powr_maxit)
 
   !real*8
   call bcast_scalar_r8(dt)
@@ -543,6 +557,7 @@ subroutine bcast_variables
   call bcast_scalar_r8(tp)   
   call bcast_scalar_r8(homo)
   call bcast_scalar_r8(lumo)
+  call bcast_scalar_r8(powr_ftol)
 
   !logical
   call bcast_scalar_L(flgdyn) 

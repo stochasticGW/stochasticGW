@@ -21,6 +21,7 @@ subroutine hmin_hmax_gpu
   implicit none
   integer :: st
   real*8  :: normhm(2),rayqt(2)
+  real*8  :: oldrayqt(2),conver(2)
 
 ! Error handling
   if (.not.device_setup) stop ' hmin_hmax_gpu(): device not setup'
@@ -68,18 +69,19 @@ contains
 
     implicit none
     integer :: i,j,k
-    integer, parameter :: niter=200
 
     if (rank==0) then
        write(17,*) 'Hamiltonian spectral estimation (power iterations):'
     endif
+
+    oldrayqt=0.d0
 
 !   Normalize po
     call renrmlz_hmin_hmax
 
 !   Main Chebyshev loop
     !$acc data present(pe,po,rayqt)
-    do k=0,niter
+    do k=0,powr_maxit
 
 !      Both pe and po must contain Pn(H)*psi, so copy here
        !$acc parallel loop gang vector collapse(2) async
@@ -114,14 +116,19 @@ contains
           call rayleigh_quotient
           !$acc wait
           !$acc update host (rayqt)
+          conver(:)=abs((oldrayqt(:)-rayqt(:))/rayqt(:))
+          oldrayqt(:)=rayqt(:)
           if (rank==0) then
-             write(17,*) k, rayqt(1),rayqt(2)
+             write(17,'(X,I5,X,2(f15.8,X),2(ES10.3,X))') &
+             k,rayqt(1),rayqt(2),conver(1),conver(2)
           endif
+          oldrayqt(:)=rayqt(:)
        endif
 
 !      Normalize po
        call renrmlz_hmin_hmax
 
+       if (conver(1).le.powr_ftol .and. conver(2).le.powr_ftol) exit
     enddo
     !$acc end data
 

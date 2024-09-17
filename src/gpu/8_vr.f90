@@ -435,8 +435,8 @@ contains
     !$acc data present(gamvrd,ft)
     !$acc parallel loop gang vector async
     do j=1,ngam
-!       ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(gamvrd(j,sp0,1)))
-       ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(sngl(gamvrd(j,sp0,1))))
+       ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(gamvrd(j,sp0,1)))
+!       ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(sngl(gamvrd(j,sp0,1))))
     enddo
     !$acc end data
 
