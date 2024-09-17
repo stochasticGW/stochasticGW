@@ -13,11 +13,12 @@
 !                                                   
 !                                                   
 subroutine kb_makeracut
-  use simple_mpi, only : rank
+  use simple_mpi, only : rank, bcast_r8
   use kb_mod, only : nrpp, rrpp, phipp, racut_a, matop
   implicit none
   
-  if(rank==0)  call make_racut_a
+  if(rank==0) call make_racut_a
+  call bcast_r8( racut_a, size(racut_a),0)
 
 contains
 
