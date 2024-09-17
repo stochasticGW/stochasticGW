@@ -19,9 +19,6 @@ end program gw
 subroutine main
   use simple_mpi
   use gwm
-#if GPU_ENABLED
-  use device_mem_module
-#endif
   implicit none
   real*8 :: tstart,tend
   call prepare_mpi_lib
@@ -78,13 +75,7 @@ contains
     call seg_prep
     call set_ngam_nzero_blk
     if(.not.trace)   call calc_eorb
-#if GPU_ENABLED
-    if (usegpu) call init_device
-#endif
     if(filter_cheby .and. .not.rdhavg)  call improve_hmin_hmax
-#if GPU_ENABLED
-    if (usegpu) call flush_device
-#endif
     if(filter_cheby) call set_theta
     !call exchange_set 
     call prnt_time_mpi(" preparation ",tstart)

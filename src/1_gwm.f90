@@ -133,7 +133,11 @@ module gwm
   logical              :: filter_cheby   = .false.
   logical              :: rdmu           = .false.
   logical              :: gapped_flg     = .true.
-  logical              :: usegpu
+  logical              :: disable_gpu_hminmax
+  logical              :: disable_gpu_filter
+  logical              :: disable_gpu_gam
+  logical              :: disable_gpu_prop
+  logical              :: use_host_curand
   logical              :: block_gam_alg
   logical              :: read_homo_input = .false.
   logical              :: read_lumo_input = .false.

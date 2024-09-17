@@ -17,7 +17,7 @@ subroutine vo_make
   implicit none
 
 #if GPU_ENABLED
-  if (.not.usegpu) then ! CPU version
+  if (disable_gpu_prop) then ! CPU version
      call vr_make
      call vr_to_vo
   else

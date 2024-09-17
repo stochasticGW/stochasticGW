@@ -36,12 +36,8 @@ subroutine hmin_hmax_gpu
   !$acc wait
   !$acc end data
 
-
-   if (rank==0) then
-      write(*,*) 'Spectral bounds of H on GPU:'
-      write(*,*) '[',min(rayqt(1),rayqt(1)+rayqt(2)),&
-                 ',',max(rayqt(1),rayqt(1)+rayqt(2)),']'
-   endif
+  hmin = min(rayqt(1),rayqt(1)+rayqt(2))
+  hmax = max(rayqt(1),rayqt(1)+rayqt(2))
 
   call flush_hmin_hmax_device
 
@@ -73,6 +69,10 @@ contains
     implicit none
     integer :: i,j,k
     integer, parameter :: niter=200
+
+    if (rank==0) then
+       write(17,*) 'Hamiltonian spectral estimation (power iterations):'
+    endif
 
 !   Normalize po
     call renrmlz_hmin_hmax
@@ -115,7 +115,7 @@ contains
           !$acc wait
           !$acc update host (rayqt)
           if (rank==0) then
-             write(*,*) k, rayqt(1),rayqt(2)
+             write(17,*) k, rayqt(1),rayqt(2)
           endif
        endif
 

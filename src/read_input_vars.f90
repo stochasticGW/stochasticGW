@@ -69,8 +69,12 @@ subroutine read_input_vars !(inputfname).
   logical       :: rdlumo         =.false.
   logical       :: rdnj           =.false.
   logical       :: rdjidx         =.false.
-  logical       :: rdusegpu       =.false.
-  logical       :: rdblock_gam_alg=.false.
+  logical       :: rddisable_gpu_hminmax = .false.
+  logical       :: rddisable_gpu_filter  = .false.
+  logical       :: rddisable_gpu_gam     = .false.
+  logical       :: rddisable_gpu_prop    = .false.
+  logical       :: rduse_host_curand     = .false.
+  logical       :: rdblock_gam_alg       = .false.
   call sync_mpi
   rnk0 : if(rank==0) then
      open(101,file=trim(inputfname),iostat=inpstat)
@@ -126,8 +130,12 @@ subroutine read_input_vars !(inputfname).
      dhscl        = 1.05d0
      Tp           = 0.01
 
-     usegpu       = .false.
-     block_gam_alg= .false.
+     disable_gpu_hminmax = .false.
+     disable_gpu_filter  = .false.
+     disable_gpu_gam     = .false.
+     disable_gpu_prop    = .false.
+     use_host_curand     = .false.
+     block_gam_alg       = .false.
 
      write(6,*)' '
      call flush(6)
@@ -320,10 +328,26 @@ subroutine read_input_vars !(inputfname).
            i=i-1
            if (i.eq.0) stop "ERROR: VALUES ABSENT FOR VAR: orbj_indx"
            jidx(1:i)=buf(1:i)
-        case('usegpu')
-           if(rdusegpu)stop 'ERROR: ALREADY READ usegpu '; rdusegpu =.true.
-           read(101,*,iostat=inpstat) usegpu
-           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: usegpu"
+        case('disable_gpu_hminmax')
+           if(rddisable_gpu_hminmax) stop 'ERROR: ALREADY READ disable_gpu_hminmax '; disable_gpu_hminmax =.true.
+           read(101,*,iostat=inpstat) disable_gpu_hminmax
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_hminmax"
+        case('disable_gpu_filter')
+           if(rddisable_gpu_filter) stop 'ERROR: ALREADY READ disable_gpu_filter '; disable_gpu_filter =.true.
+           read(101,*,iostat=inpstat) disable_gpu_filter
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_filter"
+        case('disable_gpu_gam')
+           if(rddisable_gpu_gam) stop 'ERROR: ALREADY READ disable_gpu_gam '; disable_gpu_gam =.true.
+           read(101,*,iostat=inpstat) disable_gpu_gam
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_gam"
+        case('disable_gpu_prop')
+           if(rddisable_gpu_prop) stop 'ERROR: ALREADY READ disable_gpu_prop '; disable_gpu_prop =.true.
+           read(101,*,iostat=inpstat) disable_gpu_prop
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_prop"
+        case('use_host_curand')
+           if(rduse_host_curand) stop 'ERROR: ALREADY READ use_host_curand '; use_host_curand =.true.
+           read(101,*,iostat=inpstat) use_host_curand
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: use_host_curand"
         case('block_gam_alg')
            if(rdblock_gam_alg)stop 'ERROR: ALREADY READ block_gam_alg '; rdblock_gam_alg =.true.
            read(101,*,iostat=inpstat) block_gam_alg
@@ -451,11 +475,10 @@ subroutine read_input_vars !(inputfname).
      endif
 
 #if GPU_ENABLED
-     if(usegpu) then
-       if(color_size.ne.1) stop "ERROR: buffer_size must be 1 for GPU runs "
+     if ((.not.disable_gpu_hminmax) .or. (.not.disable_gpu_filter) .or. &
+         (.not.disable_gpu_gam) .or. (.not.disable_gpu_prop)) then
+        if(color_size.ne.1) stop "ERROR: buffer_size must be 1 for GPU runs "
      endif
-#else
-     if(usegpu) stop ' build not compiled for GPU'
 #endif
 
 #if LIBXC_ENABLED
@@ -535,7 +558,11 @@ subroutine bcast_variables
   call bcast_scalar_L(read_homo_input)
   call bcast_scalar_L(read_lumo_input)
   call bcast_scalar_L(read_jidx_input)
-  call bcast_scalar_L(usegpu)
+  call bcast_scalar_L(disable_gpu_hminmax)
+  call bcast_scalar_L(disable_gpu_filter)
+  call bcast_scalar_L(disable_gpu_gam)
+  call bcast_scalar_L(disable_gpu_prop)
+  call bcast_scalar_L(use_host_curand)
   call bcast_scalar_L(block_gam_alg)
   call bcast_scalar_L(fuzzy_vk)
 

@@ -106,11 +106,52 @@ subroutine h_minmax
 
   if(rank==0) then
      write(17,*)' ee_other ',ee2; call flush(17)
+!     write( 6,*)
+!     write( 6,*)" ############ HAMILTONIAN INFO: ############ "
+!     write( 6,*)
+!     write(17,*)" ############ HAMILTONIAN INFO: ############ "
+!     write(17,*)' extracted minmax  ',ee,ee+ee2
+!     write(17,*)' Extracted hmin, hmax        ',real(hmin),real(hmax)
+
+!     havg = (hmax+hmin)/2d0
+!     dh   = (hmax-hmin)/2d0
+!     dh = dh*dhscl
+!
+!     write(6,'(X,A,F16.8)')' hmin       = ',real(hmin)
+!     write(6,'(X,A,F16.8)')' hmax       = ',real(hmax)
+!     write(6,'(X,A,F16.8)')' dh scaling = ',real(dhscl)
+!     write(6,'(X,A,F16.8)')' dh         = ',real(dh) 
+!     write(6,'(X,A,F16.8)')' havg       = ',real(havg)
+!     write(17,*)' havg=',real(havg),'; dh(scaled by ',real(dhscl),') is ',real(dh)
+!     call flush(6)  
+!     call flush(17) 
+  endif
+  deallocate(pa,pb,p1,tmp)
+
+!  call bcast_scalar_r8(havg)
+!  call bcast_scalar_r8(dh)
+
+!  if (nchbmx==-1) nchbmx = dh/tp*30d0  !note new formula
+!  if(rank==0) then
+!     write(17,*)' nchbmx = ',nchbmx
+!     call flush(17)
+!     write(6,'(X,A,I16)')' nchbmx     = ',nchbmx
+!     call flush(6)
+!  endif
+end subroutine h_minmax
+
+subroutine proc_hminmax_info
+
+  use gwm, only : dhscl, dh, havg, hmin, hmax
+  use gwm, only : tp, nchbmx
+  use simple_mpi, only : rank, bcast_scalar_r8
+  implicit none
+
+  if(rank==0) then
      write( 6,*)
      write( 6,*)" ############ HAMILTONIAN INFO: ############ "
      write( 6,*)
      write(17,*)" ############ HAMILTONIAN INFO: ############ "
-     write(17,*)' extracted minmax  ',ee,ee+ee2
      write(17,*)' Extracted hmin, hmax        ',real(hmin),real(hmax)
 
      havg = (hmax+hmin)/2d0
@@ -120,13 +161,12 @@ subroutine h_minmax
      write(6,'(X,A,F16.8)')' hmin       = ',real(hmin)
      write(6,'(X,A,F16.8)')' hmax       = ',real(hmax)
      write(6,'(X,A,F16.8)')' dh scaling = ',real(dhscl)
-     write(6,'(X,A,F16.8)')' dh         = ',real(dh) 
+     write(6,'(X,A,F16.8)')' dh         = ',real(dh)
      write(6,'(X,A,F16.8)')' havg       = ',real(havg)
      write(17,*)' havg=',real(havg),'; dh(scaled by ',real(dhscl),') is ',real(dh)
-     call flush(6)  
-     call flush(17) 
+     call flush(6)
+     call flush(17)
   endif
-  deallocate(pa,pb,p1,tmp)
 
   call bcast_scalar_r8(havg)
   call bcast_scalar_r8(dh)
@@ -138,4 +178,6 @@ subroutine h_minmax
      write(6,'(X,A,I16)')' nchbmx     = ',nchbmx
      call flush(6)
   endif
-end subroutine h_minmax
+
+end subroutine proc_hminmax_info
+

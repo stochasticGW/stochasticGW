@@ -56,7 +56,6 @@ subroutine prnt_settings
      write(6,*) " det_tddft       =",det_tddft
      write(6,*) " binary inp.     =",binwf
      write(6,*) " periodic        =",(dim_periodic.gt.0)
-     write(6,*) " usegpu          =",usegpu
      write(6,*) " block_gam_alg   =",block_gam_alg
      write(6,*) " scale_vh        =",scale_vh
      write(6,*) " N_cores (mpi)   =",nds
@@ -85,7 +84,15 @@ subroutine prnt_settings
            write(6,*) " mu              =",mu
            write(6,*) " Tp              =",Tp 
         endif
+#if GPU_ENABLED
+    write(6,*) " hminmax on GPU  =",(.not.disable_gpu_hminmax)
+    write(6,*) " filter  on GPU  =",(.not.disable_gpu_filter)
+#endif
      endif
+#if GPU_ENABLED
+    write(6,*) " gam     on GPU  =",(.not.(disable_gpu_gam.or.use_host_curand))
+    write(6,*) " prop    on GPU  =",(.not.disable_gpu_prop)
+#endif
      write(6,'(1X,A,F12.5)') " ekcut           =",ekcut
      write(6,'(1X,A,F12.5)') " dt              =",dt
      write(6,'(1X,A,F12.5)') " gamma           =",gama

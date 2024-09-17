@@ -24,7 +24,8 @@ subroutine gw_core
   real*8  :: t0, t1
 
 #if GPU_ENABLED
-  if (usegpu) call init_device
+  if (.not.disable_gpu_filter .or. .not.disable_gpu_gam &
+      .or. .not.disable_gpu_prop) call init_device
 #endif
 
   call alloc_ge_gge
@@ -106,7 +107,8 @@ subroutine gw_core
   if(nj>0) deallocate(gej, stat=st)
 
 #if GPU_ENABLED
-  if (usegpu) call flush_device
+  if (.not.disable_gpu_filter .or. .not.disable_gpu_gam &
+      .or. .not.disable_gpu_prop) call flush_device
 #endif
 
 contains
@@ -116,7 +118,7 @@ contains
     implicit none
 
 #if GPU_ENABLED
-    if (.not.usegpu) then
+    if (disable_gpu_prop) then
        call make_ct_host ! CPU version
     else
        call make_ct_gpu

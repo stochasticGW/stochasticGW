@@ -28,7 +28,7 @@ subroutine pt_eta
      call pt_eta_effic
   else
 #if GPU_ENABLED
-     if (.not.usegpu) then
+     if (disable_gpu_filter) then
         call eta_fltr
         call pt_fltr
      else

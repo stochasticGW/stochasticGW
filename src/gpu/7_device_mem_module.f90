@@ -34,7 +34,6 @@ module device_mem_module
   real*8  :: two_ov_dh
   complex*16, allocatable :: pe(:,:), po(:,:), pa(:,:), ptmp(:,:)
   complex*16, allocatable :: pt0(:,:,:), expvks(:,:,:), ovdev(:)
-  logical :: curand_host_test=.FALSE.
   logical :: device_setup=.FALSE.
   logical :: rand_dev_setup=.FALSE.
   logical :: ffts_setup=.FALSE.
@@ -299,7 +298,7 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! Allocates arrays for gamma function modules
-      use gwm, only : gam, seg, ngam
+      use gwm, only : gam, seg, ngam, use_host_curand
 
       implicit none
 
@@ -312,7 +311,7 @@ contains
          stop ' init_vomake_device(): wrong size: gam'
       endif
 
-      if (.not.curand_host_test) then
+      if (.not.use_host_curand) then
          !$acc enter data create(gam)
       endif
 
@@ -321,6 +320,29 @@ contains
       gam_dev_setup=.TRUE.
 
       end subroutine init_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine flush_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Allocates arrays for gamma function modules
+      use gwm, only : gam, seg, ngam
+      use gwm, only : disable_gpu_prop
+
+      implicit none
+
+! If GPU propagation is disabled, copy out the 'gam' array so that it is
+! available for the propagation code running on the host; otherwise,
+! leave the 'gam' array on device for the GPU propagation
+      if (disable_gpu_prop) then
+         !$acc update host(gam)
+         !$acc exit data delete(gam)
+      endif
+
+      gam_dev_setup=.FALSE.
+
+      end subroutine flush_gam_device
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -335,12 +357,6 @@ contains
 
       implicit none
       integer :: st
-!      integer :: thegpu,ndev
-
-!      ndev=acc_get_num_devices(acc_device_nvidia)
-!      thegpu=MOD(rank,ndev)
-!      call acc_set_device_num(thegpu,acc_device_nvidia)
-!      write(*,'(X,3(A,I0),A)') 'MPI rank ',rank,' on device (',thegpu+1,'/',ndev,')'
 
       allocate(pt0(n,ns,2), stat=st); if(st/=0) stop ' allocate pt0 '
       allocate(expvks(n,nsp,2),stat=st); if(st/=0) stop ' allocate expvks '
@@ -403,6 +419,7 @@ contains
 
       use gwm, only : vks, gam, seg_sh, seg_w, ft
       use gwm, only : n, nsp, seg, ngam, nt
+      use gwm, only : disable_gpu_gam, use_host_curand
 
       implicit none
 
@@ -432,13 +449,13 @@ contains
          stop ' init_vomake_device(): wrong size: seg_w'
       endif
       if (SIZE(ft,1).ne.(nt+1) .or. SIZE(ft,2).ne.ngam) then
-         write(*,'(X,4(A,I0),A)') 'ft must be (',nt+1,' x ',gam,&
+         write(*,'(X,4(A,I0),A)') 'ft must be (',nt+1,' x ',ngam,&
                                   ') but is (',SIZE(ft,1),' x ',SIZE(ft,2),')'
          stop ' init_vomake_device(): wrong size: ft'
       endif
 
 !     Used by both 8_vr.f90 and 8_ct.f90:
-      if (curand_host_test) then
+      if (disable_gpu_gam .or. use_host_curand) then
          !$acc enter data copyin(gam)
       endif
       !$acc enter data copyin(vks,seg_sh,seg_w) &
@@ -474,10 +491,12 @@ contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! Initialize cuRAND plans
 
+      use gwm, only : use_host_curand
+
       implicit none
       integer(4) :: cerr
 
-      if (.not.curand_host_test) then
+      if (.not.use_host_curand) then
          cerr = curandCreateGenerator(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
          if (cerr/=0) stop 'Error creating curand_plan_gam for device'
          cerr = curandSetStream(curand_plan_gam, stream_g)

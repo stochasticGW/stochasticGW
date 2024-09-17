@@ -13,17 +13,27 @@
 !                                                   
 !                                                  
 subroutine improve_hmin_hmax
-  use gwm, only : rddh, usegpu
+  use gwm, only : rddh, disable_gpu_hminmax
+#if GPU_ENABLED
+  use device_mem_module
+#endif
+
   implicit none
+
   if (.not.rddh) then
 #if GPU_ENABLED
-    if (.not.usegpu) then
-
+    if (disable_gpu_hminmax) then
+       call h_minmax
     else
-!       call hmin_hmax_gpu
+       call init_device
+       call hmin_hmax_gpu
+       call flush_device
     endif
-#endif
+#else
     call h_minmax
+#endif
   endif
+
+  call proc_hminmax_info
 
 end subroutine improve_hmin_hmax

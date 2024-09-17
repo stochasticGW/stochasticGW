@@ -27,9 +27,7 @@ subroutine gam_prep_curand_gpu
 
   fac=2.d0*dsqrt(3d0/dv)
 
-  ! acc data copyout(gam)
   !$acc data present(gam)
-
   !$acc host_data use_device(gam)
   cerr = curandGenerate(curand_plan_gam, gam, seg*ngam)
   !$acc end host_data
@@ -43,4 +41,31 @@ subroutine gam_prep_curand_gpu
   !$acc wait
   !$acc end data
 
+  call flush_gam_device
+
 end subroutine gam_prep_curand_gpu
+
+subroutine gam_prep_curand_cpu
+  use gwm
+  use device_mem_module
+  use curand
+
+  implicit none
+  integer(4) :: cerr
+  real*8  :: fac
+  integer :: i,j
+
+  if (.not.rand_dev_setup) stop ' gam_prep_curand_cpu(): curand not set up'
+
+  fac=2.d0*dsqrt(3d0/dv)
+
+  cerr = curandGenerate(curand_plan_gam, gam, seg*ngam)
+
+  do j=1,ngam
+     do i=1,seg
+        gam(i,j)=fac*(dble(gam(i,j))-0.5d0)
+     enddo
+  enddo
+
+end subroutine gam_prep_curand_cpu
+

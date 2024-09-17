@@ -30,8 +30,9 @@ subroutine gam_prep
   endif
 
 #if GPU_ENABLED
-  if (usegpu) then
-
+  if (disable_gpu_gam) then
+     call gam_prep_cpu() ! CPU version
+  else
 !    Error handling
      if (.not.rand_dev_setup) stop ' gam_prep(): curand not set up'
 !    Get the seed from the kiss generator and pass to cuRAND
@@ -39,63 +40,36 @@ subroutine gam_prep
      call set_seed_gam(1)
      cerr = curandSetPseudoRandomGeneratorSeed(curand_plan_gam,seed_array(1,line_seed_gam))
 
-     if (.not.curand_host_test) then
-        call gam_prep_curand_gpu()
-     else
+     if (use_host_curand) then
         call gam_prep_curand_cpu()
+     else
+        call gam_prep_curand_gpu()
      endif
-  else
-     call gam_prep_cpu() ! CPU version
   endif
 #else
   call gam_prep_cpu()
 #endif
 
+  if (rank==0) then
 #if GPU_ENABLED
-  if (usegpu) then
-     if (.not.curand_host_test) then
-        write(*,*) 'Gamma test (curand on device)'
+     if (disable_gpu_gam) then
+        write(17,*) 'Gamma test (intrinsic RNG on host)'
      else
-        write(*,*) 'Gamma test (curand on host)'
+        if (use_host_curand) then
+           write(17,*) 'Gamma test (curand on host)'
+        else
+           write(17,*) 'Gamma test (curand on device)'
+        endif
      endif
-  else
-    write(*,*) 'Gamma test (intrinsic RNG on host)'
-  endif
 #else
-  write(*,*) 'Gamma test (intrinsic RNG on host)'
+     write(17,*) 'Gamma test (intrinsic RNG on host)'
 #endif
-  do i=1,50
-     write(*,*) i,gam(i,1),gam(i,2),gam(i,3),gam(i,4)
-  enddo
+!     do i=1,50
+!        write(*,*) i,gam(i,1),gam(i,2),gam(i,3),gam(i,4)
+!     enddo
+  endif
 
 end subroutine gam_prep
-
-#if GPU_ENABLED
-subroutine gam_prep_curand_cpu
-  use gwm
-  use device_mem_module
-  use curand
-
-  implicit none
-  integer(4) :: cerr
-  real*8  :: fac,tmp
-  integer :: i,j
-  integer(kind=8) :: k
-
-  if (.not.rand_dev_setup) stop ' gam_prep_curand_cpu(): curand not set up'
-
-  fac=2.d0*dsqrt(3d0/dv)
-
-  cerr = curandGenerate(curand_plan_gam, gam, seg*ngam)
-
-  do j=1,ngam
-     do i=1,seg
-        gam(i,j)=fac*(dble(gam(i,j))-0.5d0)
-     enddo
-  enddo
-
-end subroutine gam_prep_curand_cpu
-#endif
 
 subroutine gam_prep_cpu
   use gwm
