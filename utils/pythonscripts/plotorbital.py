@@ -1,4 +1,4 @@
-# Import libraries
+# Python script for plotting orbital/density from StochasticGW input files
 import sys
 import os
 import string
