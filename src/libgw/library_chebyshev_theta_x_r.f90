@@ -175,12 +175,14 @@ subroutine cheb_coeff_theta_zero_gap_new(nchb, havg, DL, co0, nchbtop, homo, lum
   enddo
 
   call mat_diag(mat,vec,eig)
-  
-  if(rank==0) write(17,*)
-  if(rank==0) write(17,*)'eig(0:4)  ',real(eig(0:4))
-  if(rank==0) write(17,*)'eig(nchb-4:nchb)',real(eig(nchb-4:nchb))
-  if(minval(eig).le.0) write(6,*) 'negative eigvalue present'
-  if(rank==0) write(17,*)' maxval(eig)/minval(eig)', maxval(eig)/minval(eig)
+
+  if(rank==0) then
+    write(17,*)
+    write(17,*)'eig(0:4)  ',real(eig(0:4))
+    write(17,*)'eig(nchb-4:nchb)',real(eig(nchb-4:nchb))
+    if(minval(eig).le.0) write(17,*) 'negative eigvalue present'
+    write(17,*)' maxval(eig)/minval(eig)', maxval(eig)/minval(eig)
+  endif
 
   do i=0,nchb
     if(eig(i)>toll) then
