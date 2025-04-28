@@ -50,7 +50,7 @@ subroutine pt_eta_fltr_gpu
   endif
   if (SIZE(normpt).ne.ns) then
      write(*,'(X,2(A,I0),A)') 'normpt must be (',ns,') but is (',SIZE(normpt),')'
-     stop ' pt_eta_gpu(): wrong size: th_co'
+     stop ' pt_eta_gpu(): wrong size: normpt'
   endif
 
   allocate(pa(n,ns+1), stat=st); &
@@ -127,7 +127,7 @@ contains
                 pa(i,is) = pa(i,is)+coef*pe(i,is)
              enddo
           enddo
-          call chebfilt_pteta(n,ns+1,.TRUE.)
+          call chebfilt_pteta(n,ns+1,.TRUE.,.FALSE.)
 
           if (k.eq.0) then
              !$acc parallel loop gang vector collapse(2) async
@@ -146,7 +146,7 @@ contains
                 pa(i,is) = pa(i,is)+coef*po(i,is)
              enddo
           enddo
-          call chebfilt_pteta(n,ns+1,.FALSE.)
+          call chebfilt_pteta(n,ns+1,.FALSE.,.FALSE.)
 
        endif
 

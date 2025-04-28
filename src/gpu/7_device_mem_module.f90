@@ -18,22 +18,28 @@ module device_mem_module
   use openacc
   use cudafor
   use cufft
+  use curand
 
   implicit none
   save
-  integer(4) :: cufft_plan_rho, cufft_plan(2), cufft_plan_ft, cufft_plan_pteta
+  type(curandGenerator) :: curand_plan_gam
+  integer(4) :: cufft_plan_rho, cufft_plan_ft
+  integer(4) :: cufft_plan_filt(2), cufft_plan(2)
   integer(kind=cuda_stream_kind) :: stream_g
   integer :: nalj
   integer, parameter :: cnk = 200
-  integer, allocatable    :: ialj(:), jss(:), nbtt(:), map_sp_pteta(:)
+  integer, allocatable    :: map_sp_pteta(:)
   real*8,  allocatable    :: qr(:,:,:), qi(:,:,:), nrmarray(:,:)
   real*8,  allocatable    :: qcr(:,:), qci(:,:), shscvks(:,:), scpsi(:)
   real*8  :: two_ov_dh
   complex*16, allocatable :: pe(:,:), po(:,:), pa(:,:), ptmp(:,:)
   complex*16, allocatable :: pt0(:,:,:), expvks(:,:,:), ovdev(:)
   logical :: device_setup=.FALSE.
+  logical :: rand_dev_setup=.FALSE.
   logical :: ffts_setup=.FALSE.
+  logical :: hmin_hmax_setup=.FALSE.
   logical :: filter_setup=.FALSE.
+  logical :: gam_dev_setup=.FALSE.
   logical :: propdtpt_setup=.FALSE.
   logical :: vomake_setup=.FALSE.
   logical :: makecudagraph=.FALSE.
@@ -47,75 +53,36 @@ contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! Allocates arrays for device propdt_pt module
 
-      use gwm,    only : na, dv, dt, dh
-      use kb_mod, only : lpptop, lpploc, mapai, iub, ngs, vp
-      use kb_mod, only : vp, pvp
-      logical, intent(in)     :: chebfacs
-      complex*16, allocatable :: ovdevtmp(:)
-      integer, allocatable    :: iatmp(:), jsstmp(:), nbttmp(:)
-      integer :: ma, igg, k, l, j, ib, it, ia, nbt, jb, js
-      real*8, parameter  :: toll_o = 1d-8
-      real*8  :: dot
-      complex*16, parameter   :: ci=(0d0,1d0)
-      complex*16              :: fac
+      use gwm,    only : dv, dt
+      use kb_mod, only : nsuper_ianl
+      use kb_mod, only : indx_ianl
+      use kb_mod, only : dij_diag
+      use kb_mod, only : mapai
+      logical, intent(in)   :: chebfacs
+      integer               :: k, j, i, ia, ma
+      complex*16, parameter :: ci=(0d0,1d0)
+      complex*16            :: fac
       
       fac=-ci*dt/2d0
-      two_ov_dh=2d0/dh
 
-      ALLOCATE(ovdevtmp(16*na),iatmp(16*na),jsstmp(16*na),nbttmp(16*na))
-
-      k=1
-      do ia=1,na
-         ma=mapai(ia)
-         ! determine starting point "u" for different l
-         jb=iub(ia)
-         do l=0,lpptop(ma)
-            if (l/=lpploc(ma))then
-               ib=l**2     ! 0,1,4,9
-               it=ib+2*l   ! 0,3,8,15
-               nbt=it-ib+1 ! 1,3,5,7
-
-               ! ov=<vphi|vphi> in 3d.
-               do j=ib,it
-                  js=jb+(j-ib)
-
-                  if (chebfacs) then
-                     ovdevtmp(k) = dv * two_ov_dh / pvp(l,ma)
-                  else
-                     dot=0d0
-                     do igg=1,ngs(ia)
-                        dot= dot + vp(js+(igg-1)*nbt)**2
-                     enddo
-                     ovdevtmp(k) = max(dot*dv,toll_o)
-                     ovdevtmp(k) = dv / ovdevtmp(k) * &
-                     (exp(fac*ovdevtmp(k) / pvp(l,ma))-1d0)
-                  endif
-
-                  iatmp(k)=ia
-                  jsstmp(k)=js
-                  nbttmp(k)=nbt
-                  k=k+1
-              enddo
-              jb=jb+nbt*ngs(ia)
-            endif
-         enddo
-      enddo
-
-!     Resize atom-l-j arrays
-      nalj=k-1
-      ALLOCATE(ialj(nalj),jss(nalj),nbtt(nalj))
-      ialj(1:nalj)=iatmp(1:nalj)
-      jss(1:nalj)=jsstmp(1:nalj)
-      nbtt(1:nalj)=nbttmp(1:nalj)
       if (chebfacs) then
-         allocate(scpsi(nalj))
-         scpsi(1:nalj)=REAL(ovdevtmp(1:nalj))
+         allocate(scpsi(nsuper_ianl))
       else
-         allocate(ovdev(nalj))
-         ovdev(1:nalj)=ovdevtmp(1:nalj)
+         allocate(ovdev(nsuper_ianl))
       endif
 
-      DEALLOCATE(ovdevtmp,iatmp,jsstmp,nbttmp)
+      k=1
+      do j=1,nsuper_ianl
+         ia = indx_ianl(j,1)
+         i  = indx_ianl(j,2)
+         ma = mapai(ia)
+         if (chebfacs) then
+            scpsi(k) = dv * two_ov_dh * dij_diag(i,ma)
+         else
+            ovdev(k) = dv * (exp(fac*dij_diag(i,ma))-1d0)
+         endif
+         k=k+1
+      enddo
 
       end subroutine precompute_ovdev
 
@@ -127,13 +94,18 @@ contains
 ! Sets up device (GPU)
 
       implicit none
-      integer :: thegpu,ndev
+      integer :: thegpu,ndev,istat
 
       ndev=acc_get_num_devices(acc_device_nvidia)
       thegpu=MOD(rank,ndev)
       call acc_set_device_num(thegpu,acc_device_nvidia)
 !      write(*,'(X,3(A,I0),A)') 'MPI rank ',rank,' on device (',thegpu+1,'/',ndev,')'
 
+      istat = cudaStreamCreateWithFlags(stream_g, cudaStreamNonBlocking)
+      call acc_set_cuda_stream(0, stream_g)
+
+!     cuRAND plan
+      call init_rand_device 
 !     cuFFT plans
       call init_ffts_device
 
@@ -152,10 +124,90 @@ contains
 
 !     cuFFT plans
       call flush_ffts_device
+!     cuRAND plan
+      call flush_rand_device
 
       device_setup = .FALSE.
 
       end subroutine flush_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine init_hmin_hmax_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Allocates arrays for device Chebyshev filter module
+
+      use gwm,    only : n, ns, nsp, sp0
+      use gwm,    only : vks, ekn, map_sp_pt
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
+
+      implicit none
+      integer :: st
+      
+!     Error handling
+      if (.not.allocated(vks)) stop ' init_hmin_hmax_device(): vks not allocated'
+      if (.not.allocated(ekn)) stop ' init_hmin_hmax_device(): ekn not allocated'
+
+      if (SIZE(vks,1).ne.n .or. SIZE(vks,2).ne.nsp) then
+         write(*,'(X,4(A,I0),A)') 'vks must be (',n,' x ',nsp,&
+                                  ') but is (',SIZE(vks,1),' x ',SIZE(vks,2),')'
+         stop ' init_hmin_hmax_device(): wrong size: vks'
+      endif
+      if (SIZE(ekn).ne.n) then
+         write(*,'(X,2(A,I0),A)') 'ekn must be (',n,') but is (',SIZE(ekn),')'
+         stop ' init_hmin_hmax_device(): wrong size: ekn'
+      endif
+
+      allocate(shscvks(n,nsp), stat=st); &
+               if(st/=0) stop ' init_hmin_hmax_device(): trouble allocating shscvks '
+      allocate(pe(n,2),po(n,2),ptmp(n,2), stat=st); &
+               if(st/=0) stop ' init_hmin_hmax_device(): trouble allocating pe, po, ptmp'
+      allocate(qcr(n,2),qci(n,2), stat=st); if(st/=0) stop ' allocate  qr, qi '
+      allocate(map_sp_pteta(2), stat=st); &
+               if(st/=0) stop ' init_hmin_hmax_device(): trouble allocating map_sp_pteta '
+
+!     Set Chebyshev scaling factor here to multiply the potential energy arrays
+!     scpsi and shscvks (factor is also used to multiply kinetic energy later)
+      two_ov_dh=2.d0
+      call precompute_ovdev(.TRUE.)
+      shscvks(:,:)=two_ov_dh*vks(:,:)
+      map_sp_pteta(:)=sp0 ! spin mapping
+
+      !$acc enter data create(qcr,qci,pe,po,ptmp) &
+      !$acc copyin(shscvks,ekn,map_sp_pteta) &
+      !$acc copyin(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
+
+      hmin_hmax_setup=.TRUE.
+
+      end subroutine init_hmin_hmax_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine flush_hmin_hmax_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Dellocates arrays for device propdt_pt module
+
+      use gwm,    only : ekn
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
+
+      implicit none
+      integer :: st
+
+      !$acc exit data delete(pe,po,ptmp,qcr,qci) & 
+      !$acc delete(shscvks,ekn,map_sp_pteta) &
+      !$acc delete(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
+
+      deallocate(shscvks, stat=st); if (st/=0) stop ' deallocate shscvks '
+      deallocate(pe,po,ptmp, stat=st); if (st/=0) stop ' deallocate pe,po,ptmp '
+      deallocate(qcr,qci, stat=st); if (st/=0) stop ' deallocate qr,qi '
+      deallocate(map_sp_pteta, stat=st); if(st/=0) stop ' deallocate map_sp_pteta '
+      deallocate(scpsi, stat=st); if (st/=0) stop ' deallocate scpsi '
+
+      hmin_hmax_setup=.FALSE.
+      
+      end subroutine flush_hmin_hmax_device
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -166,7 +218,7 @@ contains
 
       use gwm,    only : n, ns, nsp, sp0, dh, havg
       use gwm,    only : vks, ekn, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
@@ -197,15 +249,17 @@ contains
       allocate(map_sp_pteta(ns+1), stat=st); &
                if(st/=0) stop ' init_filter_device(): trouble allocating map_sp_pteta '
 
-      shscvks(:,:)=2d0/dh*(vks(:,:)-havg)
+!     Set Chebyshev scaling factor here to multiply the potential energy arrays
+!     scpsi and shscvks (factor is also used to multiply kinetic energy later)
+      two_ov_dh=2.d0/dh
+      call precompute_ovdev(.TRUE.)
+      shscvks(:,:)=two_ov_dh*(vks(:,:)-havg)
       map_sp_pteta(1:ns)=map_sp_pt(1:ns) ! spin mapping (pt)
       map_sp_pteta(ns+1)=sp0             ! spin mapping (eta)
 
-      call precompute_ovdev(.TRUE.)
-
       !$acc enter data create(qcr,qci,pe,po,ptmp) &
       !$acc copyin(shscvks,ekn,map_sp_pteta) &
-      !$acc copyin(mapkbg,ngs,vp,scpsi,ialj,jss,nbtt)
+      !$acc copyin(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
 
       filter_setup=.TRUE.
 
@@ -219,27 +273,76 @@ contains
 ! Dellocates arrays for device propdt_pt module
 
       use gwm,    only : ekn
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
 
       !$acc exit data delete(pe,po,ptmp,qcr,qci) & 
       !$acc delete(shscvks,ekn,map_sp_pteta) &
-      !$acc delete(mapkbg,ngs,vp,scpsi,ialj,jss,nbtt)
+      !$acc delete(mapkbg,ngs,vp_hamann,scpsi,indx_ianl,start_ianl)
 
       deallocate(shscvks, stat=st); if (st/=0) stop ' deallocate shscvks '
       deallocate(pe,po,ptmp, stat=st); if (st/=0) stop ' deallocate pe,po,ptmp '
       deallocate(qcr,qci, stat=st); if (st/=0) stop ' deallocate qr, qi '
       deallocate(map_sp_pteta, stat=st); if(st/=0) stop ' deallocate map_sp_pteta '
       deallocate(scpsi, stat=st); if (st/=0) stop ' deallocate scpsi '
-      deallocate(ialj, stat=st); if (st/=0) stop ' deallocate ialj '
-      deallocate(jss, stat=st); if (st/=0) stop ' deallocate jss '
-      deallocate(nbtt, stat=st); if (st/=0) stop ' deallocate nbtt '
 
       filter_setup=.FALSE.
       
       end subroutine flush_filter_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine init_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Allocates arrays for gamma function modules
+      use gwm, only : gam, seg, ngam, use_host_curand
+
+      implicit none
+
+!     Check global arrays for allocation status; allocate local arrays
+      if (.not.allocated(gam)) stop ' gam not allocated'
+
+      if (SIZE(gam,1).ne.seg .or. SIZE(gam,2).ne.ngam) then
+         write(*,'(X,4(A,I0),A)') 'gam must be (',seg,' x ',ngam,&
+                                  ') but is (',SIZE(gam,1),' x ',SIZE(gam,2),')'
+         stop ' init_vomake_device(): wrong size: gam'
+      endif
+
+      if (.not.use_host_curand) then
+         !$acc enter data create(gam)
+      endif
+
+      ! Note that 'gam' is removed from device in flush_vomake_device()
+
+      gam_dev_setup=.TRUE.
+
+      end subroutine init_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine flush_gam_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Allocates arrays for gamma function modules
+      use gwm, only : gam, seg, ngam
+      use gwm, only : disable_gpu_prop
+
+      implicit none
+
+! If GPU propagation is disabled, copy out the 'gam' array so that it is
+! available for the propagation code running on the host; otherwise,
+! leave the 'gam' array on device for the GPU propagation
+      if (disable_gpu_prop) then
+         !$acc update host(gam)
+         !$acc exit data delete(gam)
+      endif
+
+      gam_dev_setup=.FALSE.
+
+      end subroutine flush_gam_device
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -250,16 +353,10 @@ contains
 
       use gwm,    only : n, ns, nsp, na
       use gwm,    only : expnk, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
-!      integer :: thegpu,ndev
-
-!      ndev=acc_get_num_devices(acc_device_nvidia)
-!      thegpu=MOD(rank,ndev)
-!      call acc_set_device_num(thegpu,acc_device_nvidia)
-!      write(*,'(X,3(A,I0),A)') 'MPI rank ',rank,' on device (',thegpu+1,'/',ndev,')'
 
       allocate(pt0(n,ns,2), stat=st); if(st/=0) stop ' allocate pt0 '
       allocate(expvks(n,nsp,2),stat=st); if(st/=0) stop ' allocate expvks '
@@ -280,7 +377,7 @@ contains
 
       !$acc enter data create(pt0,expvks,qr,qi,nrmarray) &
       !$acc copyin(expnk,map_sp_pt) &
-      !$acc copyin(mapkbg,ngs,vp,ovdev,ialj,jss,nbtt)
+      !$acc copyin(mapkbg,ngs,vp_hamann,ovdev,indx_ianl,start_ianl)
 
       propdtpt_setup=.TRUE.
 
@@ -294,23 +391,20 @@ contains
 ! Dellocates arrays for device propdt_pt module
 
       use gwm,    only : expnk, map_sp_pt
-      use kb_mod, only : mapkbg, ngs, vp
+      use kb_mod, only : mapkbg, ngs, vp_hamann, indx_ianl, start_ianl
 
       implicit none
       integer :: st
 
       !$acc exit data delete(pt0,expvks,qr,qi,nrmarray) & 
       !$acc delete(expnk,map_sp_pt) &
-      !$acc delete(mapkbg,ngs,vp,ovdev,ialj,jss,nbtt)
+      !$acc delete(mapkbg,ngs,vp_hamann,ovdev,indx_ianl,start_ianl)
 
       deallocate(pt0, stat=st); if (st/=0) stop ' deallocate pt0 '
       deallocate(expvks, stat=st); if (st/=0) stop ' deallocate expvks '
       deallocate(qr,qi, stat=st); if (st/=0) stop ' deallocate qr, qi '
       deallocate(nrmarray, stat=st); if (st/=0) stop ' deallocate nrmarray '
       deallocate(ovdev, stat=st); if (st/=0) stop ' deallocate ovdev '
-      deallocate(ialj, stat=st); if (st/=0) stop ' deallocate ialj '
-      deallocate(jss, stat=st); if (st/=0) stop ' deallocate jss '
-      deallocate(nbtt, stat=st); if (st/=0) stop ' deallocate nbtt '
 
       propdtpt_setup=.FALSE.
       
@@ -325,6 +419,7 @@ contains
 
       use gwm, only : vks, gam, seg_sh, seg_w, ft
       use gwm, only : n, nsp, seg, ngam, nt
+      use gwm, only : disable_gpu_gam, use_host_curand
 
       implicit none
 
@@ -354,13 +449,16 @@ contains
          stop ' init_vomake_device(): wrong size: seg_w'
       endif
       if (SIZE(ft,1).ne.(nt+1) .or. SIZE(ft,2).ne.ngam) then
-         write(*,'(X,4(A,I0),A)') 'ft must be (',nt+1,' x ',gam,&
+         write(*,'(X,4(A,I0),A)') 'ft must be (',nt+1,' x ',ngam,&
                                   ') but is (',SIZE(ft,1),' x ',SIZE(ft,2),')'
          stop ' init_vomake_device(): wrong size: ft'
       endif
 
 !     Used by both 8_vr.f90 and 8_ct.f90:
-      !$acc enter data copyin(vks,gam,seg_sh,seg_w) &
+      if (disable_gpu_gam .or. use_host_curand) then
+         !$acc enter data copyin(gam)
+      endif
+      !$acc enter data copyin(vks,seg_sh,seg_w) &
       !$acc create(ft)
 
       vomake_setup=.TRUE.
@@ -382,8 +480,52 @@ contains
       !$acc exit data delete(vks,gam,seg_sh,seg_w,ft)
 
       vomake_setup=.FALSE.
+      gam_dev_setup=.FALSE.
 
       end subroutine flush_vomake_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine init_rand_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Initialize cuRAND plans
+
+      use gwm, only : use_host_curand
+
+      implicit none
+      integer(4) :: cerr
+
+      if (.not.use_host_curand) then
+         cerr = curandCreateGenerator(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
+         if (cerr/=0) stop 'Error creating curand_plan_gam for device'
+         cerr = curandSetStream(curand_plan_gam, stream_g)
+         if (cerr/=0) stop ' problem in curandSetStream for curand_plan_gam'
+      else
+         cerr = curandCreateGeneratorHost(curand_plan_gam, CURAND_RNG_PSEUDO_XORWOW)
+         if (cerr/=0) stop 'Error creating curand_plan_gam for host'
+      endif
+
+      rand_dev_setup=.TRUE.
+
+      end subroutine init_rand_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      subroutine flush_rand_device
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! Destroy cuRAND plans
+
+      implicit none
+      integer(4) :: cerr
+
+      cerr = curandDestroyGenerator(curand_plan_gam) 
+      if (cerr/=0) stop 'Error flushing curand_plan_gam'
+
+      rand_dev_setup=.FALSE.
+
+      end subroutine flush_rand_device
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -396,7 +538,7 @@ contains
 
       implicit none
       integer(4) :: rnk,rnk1,cerr
-      integer    :: nb,istat
+      integer    :: nb
       integer    :: fftsize(3),fftsizebig(3)
       integer, pointer :: dummy=Null()
 
@@ -406,14 +548,15 @@ contains
       fftsizebig = (/nz*scale_vh,ny*scale_vh,nx*scale_vh/)
       nb = n*(scale_vh)**3
 
-      istat = cudaStreamCreateWithFlags(stream_g, cudaStreamNonBlocking)
-      call acc_set_cuda_stream(0, stream_g)
-
-!     FFT plan (many vsn) for pteta ('ns' cols for pt +  1 col for eta)
-      cerr = cufftPlanMany(cufft_plan_pteta,rnk,fftsize,dummy,1,n,dummy,1,n,CUFFT_Z2Z,ns+1)
+!     FFT plans (many vsn) for pteta and hmin_hmax ('ns' cols for pt + 1 col for eta, or '2')
+      cerr = cufftPlanMany(cufft_plan_filt(1),rnk,fftsize,dummy,1,n,dummy,1,n,CUFFT_Z2Z,ns+1)
       if (cerr/=0) stop 'Error creating cuFFTplanMany (pteta)'
-      cerr = cufftSetStream(cufft_plan_pteta,stream_g)
-      if (cerr/=0) stop ' problem in cufft cufftSetStream for cufft_plan_pteta '
+      cerr = cufftSetStream(cufft_plan_filt(1),stream_g)
+      if (cerr/=0) stop ' problem in cufft cufftSetStream for cufft_plan_filt(1) (pteta) '
+      cerr = cufftPlanMany(cufft_plan_filt(2),rnk,fftsize,dummy,1,n,dummy,1,n,CUFFT_Z2Z,2)
+      if (cerr/=0) stop 'Error creating cuFFTplanMany (pteta)'
+      cerr = cufftSetStream(cufft_plan_filt(2),stream_g)
+      if (cerr/=0) stop ' problem in cufft cufftSetStream for cufft_plan_filt(2) (hmin_hmax) '
 
 !     FFT plan (many vsn) for rho
       cerr = cufftPlanMany(cufft_plan_rho,rnk,fftsizebig,dummy,1,nb,dummy,1,nb,CUFFT_Z2Z,2)
@@ -452,8 +595,12 @@ contains
       integer(4) :: cerr
 
 !     FFT plan (many vsn) for filtering
-      cerr = cufftDestroy(cufft_plan_pteta)
+      cerr = cufftDestroy(cufft_plan_filt(1))
       if (cerr/=0) stop 'Error flushing cuFFTplanMany (pteta)'
+
+!     FFT plan (many vsn) for hmin_hmax
+      cerr = cufftDestroy(cufft_plan_filt(2))
+      if (cerr/=0) stop 'Error flushing cuFFTplanMany (hminhmax)'
 
 !     FFT plan (many vsn) for rho
       cerr = cufftDestroy(cufft_plan_rho)

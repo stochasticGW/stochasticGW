@@ -23,6 +23,11 @@ subroutine gw_core
   integer, save :: n2=2
   real*8  :: t0, t1
 
+#if GPU_ENABLED
+  if (.not.disable_gpu_filter .or. .not.disable_gpu_gam &
+      .or. .not.disable_gpu_prop) call init_device
+#endif
+
   call alloc_ge_gge
   if(eta_flg) call set_seed_zeta()
   call set_ear
@@ -32,9 +37,6 @@ subroutine gw_core
   call calc_gge
   call write_ge
   call allocate_calc_del_zeta  ! del, zeta: calc. in eta_rank, distributed.
-#if GPU_ENABLED
-  if (usegpu) call init_device
-#endif
 
   !
   ! all cores in a given color will project for psi representing W
@@ -53,6 +55,7 @@ subroutine gw_core
   ! exchange from pt 
   !
   call xc_expect
+
   if(gamflg==1.or.gamflg==2) call gam_prep
 
   !
@@ -63,26 +66,18 @@ subroutine gw_core
      xi=zeta-eta
   end if
   if(allocated(zeta)) deallocate(zeta)
-
   allocate(etaxi(n, n2), stat=st); call check0(st,' etaxi ')
+
   call prep_norm_etaxi
+
   if(allocated(eta)) deallocate(eta)
   if(allocated(xi))  deallocate(xi)
 
   !
   ! now propagation
   !
-#if GPU_ENABLED
-  if (.not.usegpu) then
-     call vo_make ! CPU version
-  else
-     call init_propdtpt_device
-     call init_vomake_device
-     call vo_make_gpu
-  endif
-#else
   call vo_make
-#endif
+
   if(allocated(vh0))   deallocate(vh0)
   if(allocated(pt))    deallocate(pt)
   if(allocated(del))   deallocate(del)
@@ -94,18 +89,9 @@ subroutine gw_core
   !
   call prnt(1,'DEBUG: pre G0 propagation')
   allocate(vo(n,nspv),stat=st); call check0(st,' vo ')
-#if GPU_ENABLED
-  if (.not.usegpu) then
-     call make_ct ! CPU version
-  else
-     call make_ct_gpu
-     call flush_vomake_device
-     call flush_propdtpt_device
-     call flush_device
-  endif
-#else
+  
   call make_ct
-#endif
+
   deallocate(vo)
 
   if(gamflg.eq.1.or.gamflg.eq.2) then ! no need in direct
@@ -120,9 +106,30 @@ subroutine gw_core
   deallocate(gge, ge, g, stat=st); call check0(st,' gge dealloc. ')
   if(nj>0) deallocate(gej, stat=st)
 
+#if GPU_ENABLED
+  if (.not.disable_gpu_filter .or. .not.disable_gpu_gam &
+      .or. .not.disable_gpu_prop) call flush_device
+#endif
+
 contains
 
   subroutine make_ct
+    use gwm
+    implicit none
+
+#if GPU_ENABLED
+    if (disable_gpu_prop) then
+       call make_ct_host ! CPU version
+    else
+       call make_ct_gpu
+    endif
+#else
+    call make_ct_host
+#endif
+
+  end subroutine make_ct
+
+  subroutine make_ct_host
     implicit none
     integer :: it, ij
     integer :: map_sp_etaxi(2)
@@ -152,7 +159,7 @@ contains
          call prnt(1,'DEBUG: G0 prop after : 0,100,200,... steps')
        end if
     enddo
-  end subroutine make_ct
+  end subroutine make_ct_host
 
   subroutine alloc_ge_gge
     implicit none

@@ -94,7 +94,7 @@ subroutine prep_vk_MT( nx,ny,nz,dx,dy,dz,vk)
            k2s = k2/(4d0*aa**2d0)
               
            if(k2s>cut) then
-              cterm = 4.d0*pi/k2*(1.d0-exp(-k2s))
+              cterm = (1.d0,0.d0)*4.d0*pi/k2*(1.d0-exp(-k2s))
            else
               ! 1-exp(-k2s) = 1-(1-k2s+ks2^2/2 - k2s^3/6) = k2s-0.5d0*k2s**2 +k2s**3/6d0
               cterm = 4d0*pi/(4d0*aa**2d0)*(1d0-0.5d0*k2s +k2s**2/6d0)

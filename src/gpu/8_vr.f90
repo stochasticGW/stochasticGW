@@ -33,8 +33,8 @@ subroutine vo_make_gpu
   if (ngam<1) stop ' vo_make_gpu(): ngam < 1 '
   if (.not.device_setup) stop ' vo_make_gpu(): device not setup'
   if (.not.ffts_setup) stop ' vo_make_gpu(): ffts not setup'
-  if (.not.propdtpt_setup) stop ' vo_make_gpu(): propdtpt not setup'
-  if (.not.vomake_setup) stop ' vo_make_gpu(): vomake not setup'
+  if (.not.propdtpt_setup) call init_propdtpt_device 
+  if (.not.vomake_setup) call init_vomake_device
   if (.not.allocated(pt)) stop ' vo_make_gpu(): pt not allocated'
   if (.not.allocated(del)) stop ' vo_make_gpu(): del not allocated'
   if (.not.allocated(vk)) stop ' vo_make_gpu(): vk not allocated'
@@ -368,23 +368,6 @@ contains
 !   Compute overlaps <xi_j | u_xi(t)>, i.e. compute
 !   v_xi^(lam)(r,t) in 'gamvr' from v_H^(lam)(r,t) in 'rho_pp'
     !$acc data present(rho_pp,seg_sh,seg_w,gam,gamvrd)
-
-!    ! acc parallel loop gang private(dot) vector_length(32) collapse(2) async
-!    do i=1,2
-!       do j=1,ngam
-!          dot=0d0
-!          ! acc loop reduction(+:dot)
-!          ! acc loop seq
-!          do k=1,seg_w(j)
-!            dot=dot+gam(k,j)*rho_pp(k+seg_sh(j),i)
-!          enddo
-!          gamvrd(j,1,i)=dot*dv
-!          if (nsp>1) gamvrd(j,nsp,i) = gamvrd(j,1,i)
-!       enddo
-!    enddo
-!    ! acc end parallel
-
-
     !$acc parallel loop gang vector collapse(2) async
     do i=1,2
        do j=1,ngam
@@ -436,6 +419,7 @@ contains
     !$acc parallel loop gang vector async
     do j=1,ngam
        ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(gamvrd(j,sp0,1)))
+!       ft(it,j) = wg*(dble(gamvrd(j,sp0,2)) - dble(sngl(gamvrd(j,sp0,1))))
     enddo
     !$acc end data
 

@@ -21,6 +21,7 @@ module gwm
   real*8,     parameter :: tollocc = 1d-9
   real*8,     parameter :: tp_dns  = 1d-5
   integer,    parameter :: lngth_char=100
+  integer               :: nproj_max = 20 ! increase if needed.  Modify to determine by reading.
   character*30          :: method_exch
   character(lngth_char) :: inputfname='INPUT'
   character(lngth_char) :: work_dir    
@@ -71,6 +72,7 @@ module gwm
   integer :: ntop
   integer :: gamflg
   integer :: seg
+  integer :: powr_maxit
   integer :: nchbmx=-1
   integer :: nchbc
   integer :: ngam_nzero_blk
@@ -100,6 +102,7 @@ module gwm
   real*8 :: mxmem_vo
   real*8 :: seg_fctr
   real*8 :: seg_frctn
+  real*8 :: powr_ftol
   real*8 :: hmin
   real*8 :: hmax
   real*8 :: dhscl
@@ -132,7 +135,11 @@ module gwm
   logical              :: filter_cheby   = .false.
   logical              :: rdmu           = .false.
   logical              :: gapped_flg     = .true.
-  logical              :: usegpu
+  logical              :: disable_gpu_hminmax
+  logical              :: disable_gpu_filter
+  logical              :: disable_gpu_gam
+  logical              :: disable_gpu_prop
+  logical              :: use_host_curand
   logical              :: block_gam_alg
   logical              :: read_homo_input = .false.
   logical              :: read_lumo_input = .false.

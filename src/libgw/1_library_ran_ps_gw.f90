@@ -111,9 +111,11 @@ end module rand_seed_mod
 function ran_ps()
   use mod_kiss,      only : kiss_uniform
   use mpi_lib_ours,  only : rank
-  use rand_seed_mod, only : first,line_seed, mdiffseeds, seed_array, read_initiate_seeds
+  use rand_seed_mod, only : first, line_seed, mdiffseeds, seed_array, read_initiate_seeds
   implicit none
+  integer  i
   integer, save :: cnt=0
+  integer, parameter :: nrepeat = 50
   real*8   r
   real*8   ran_ps
   
@@ -127,11 +129,13 @@ function ran_ps()
   
   call check_lele(1,line_seed, mdiffseeds,' 1 line_seed, mdiffseeds ')
 
-  call ran_ps_putseed(seed_array(:,line_seed))
-  call kiss_uniform(r)
-  ran_ps = r
-  call ran_ps_getseed(seed_array(:,line_seed))
-  
+  do i=1,nrepeat
+     call ran_ps_putseed(seed_array(:,line_seed))
+     call kiss_uniform(r)
+     ran_ps = r
+     call ran_ps_getseed(seed_array(:,line_seed))
+  end do
+
 end function ran_ps
 
 subroutine ran_ps_getseed(seed)

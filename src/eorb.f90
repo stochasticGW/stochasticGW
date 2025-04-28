@@ -35,7 +35,7 @@ subroutine calc_eorb
           write(6,*)' WARNING: large difference between eorb read and <phi|H|phi> '
      if(.not.read_eorb) eorb = eorb_calc
      write(6,*)     
-     call debug_analyze_h(pa,vks,n)
+!     call debug_analyze_h(pa,vks,n)
      call flush(6)
 
      deallocate(pa, p1, tmp)

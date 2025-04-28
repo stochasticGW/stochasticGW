@@ -69,8 +69,14 @@ subroutine read_input_vars !(inputfname).
   logical       :: rdlumo         =.false.
   logical       :: rdnj           =.false.
   logical       :: rdjidx         =.false.
-  logical       :: rdusegpu       =.false.
-  logical       :: rdblock_gam_alg=.false.
+  logical       :: rdpowr_maxit   =.false.
+  logical       :: rdpowr_ftol    =.false.
+  logical       :: rddisable_gpu_hminmax = .false.
+  logical       :: rddisable_gpu_filter  = .false.
+  logical       :: rddisable_gpu_gam     = .false.
+  logical       :: rddisable_gpu_prop    = .false.
+  logical       :: rduse_host_curand     = .false.
+  logical       :: rdblock_gam_alg       = .false.
   call sync_mpi
   rnk0 : if(rank==0) then
      open(101,file=trim(inputfname),iostat=inpstat)
@@ -125,9 +131,15 @@ subroutine read_input_vars !(inputfname).
      dh           =    1d0 ! will be read or determined
      dhscl        = 1.05d0
      Tp           = 0.01
+     powr_maxit   = 200 
+     powr_ftol    = 1.d-16
 
-     usegpu       = .false.
-     block_gam_alg= .false.
+     disable_gpu_hminmax = .false.
+     disable_gpu_filter  = .false.
+     disable_gpu_gam     = .false.
+     disable_gpu_prop    = .false.
+     use_host_curand     = .false.
+     block_gam_alg       = .false.
 
      write(6,*)' '
      call flush(6)
@@ -282,7 +294,15 @@ subroutine read_input_vars !(inputfname).
            if(rdfilter)stop 'ERROR: ALREADY READ projection'; rdfilter =.true.
            read(101,*,iostat=inpstat) proj
            filter_cheby = .not.proj
-           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: projection "
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: projection"
+        case('powr_maxit')
+           if(rdpowr_maxit)stop 'ERROR: ALREADY READ powr_maxit '; rdpowr_maxit =.true.
+           read(101,*,iostat=inpstat) powr_maxit
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: powr_maxit"
+        case('powr_ftol')
+           if(rdpowr_ftol)stop 'ERROR: ALREADY READ powr_ftol '; rdpowr_ftol =.true.
+           read(101,*,iostat=inpstat) powr_ftol
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: powr_ftol"
         case('tp')
            if(rdtp)stop 'ERROR: ALREADY READ Tp '; rdTp =.true.
            read(101,*,iostat=inpstat) Tp
@@ -320,10 +340,26 @@ subroutine read_input_vars !(inputfname).
            i=i-1
            if (i.eq.0) stop "ERROR: VALUES ABSENT FOR VAR: orbj_indx"
            jidx(1:i)=buf(1:i)
-        case('usegpu')
-           if(rdusegpu)stop 'ERROR: ALREADY READ usegpu '; rdusegpu =.true.
-           read(101,*,iostat=inpstat) usegpu
-           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: usegpu"
+        case('disable_gpu_hminmax')
+           if(rddisable_gpu_hminmax) stop 'ERROR: ALREADY READ disable_gpu_hminmax '; disable_gpu_hminmax =.true.
+           read(101,*,iostat=inpstat) disable_gpu_hminmax
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_hminmax"
+        case('disable_gpu_filter')
+           if(rddisable_gpu_filter) stop 'ERROR: ALREADY READ disable_gpu_filter '; disable_gpu_filter =.true.
+           read(101,*,iostat=inpstat) disable_gpu_filter
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_filter"
+        case('disable_gpu_gam')
+           if(rddisable_gpu_gam) stop 'ERROR: ALREADY READ disable_gpu_gam '; disable_gpu_gam =.true.
+           read(101,*,iostat=inpstat) disable_gpu_gam
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_gam"
+        case('disable_gpu_prop')
+           if(rddisable_gpu_prop) stop 'ERROR: ALREADY READ disable_gpu_prop '; disable_gpu_prop =.true.
+           read(101,*,iostat=inpstat) disable_gpu_prop
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: disable_gpu_prop"
+        case('use_host_curand')
+           if(rduse_host_curand) stop 'ERROR: ALREADY READ use_host_curand '; use_host_curand =.true.
+           read(101,*,iostat=inpstat) use_host_curand
+           if(inpstat /= 0) stop "ERROR: VALUE ABSENT FOR VAR: use_host_curand"
         case('block_gam_alg')
            if(rdblock_gam_alg)stop 'ERROR: ALREADY READ block_gam_alg '; rdblock_gam_alg =.true.
            read(101,*,iostat=inpstat) block_gam_alg
@@ -423,11 +459,12 @@ subroutine read_input_vars !(inputfname).
      case default; stop ' ERROR: box should be "pos" or "sym" '
      end select
 
+     if(powr_maxit<1.and.filter_cheby)   stop "ERROR:powr_maxit must be > 0"
      if(dhscl<1d0)                       stop "ERROR: dhscl SHOULD BE >= 1.0 "
      if(Tp<0d0)                          stop "ERROR: Tp should be positive "
      if(rdmu.and..not.filter_cheby)      stop "ERROR: dont give mu if projection is on"
      if(rdnchb) toll = 1d5 !to allow nchb to be whatever value set
-     if (rdhomo .and. rdlumo .and. (lumo .le. homo)) stop " LUMO must be greater than HOMO"
+     if(rdhomo .and. rdlumo .and. (lumo .le. homo)) stop " LUMO must be greater than HOMO"
 
      if (rdjidx) then
         read_jidx_input=.TRUE.
@@ -451,11 +488,10 @@ subroutine read_input_vars !(inputfname).
      endif
 
 #if GPU_ENABLED
-     if(usegpu) then
-       if(color_size.ne.1) stop "ERROR: buffer_size must be 1 for GPU runs "
+     if ((.not.disable_gpu_hminmax) .or. (.not.disable_gpu_filter) .or. &
+         (.not.disable_gpu_gam) .or. (.not.disable_gpu_prop)) then
+        if(color_size.ne.1) stop "ERROR: buffer_size must be 1 for GPU runs "
      endif
-#else
-     if(usegpu) stop ' build not compiled for GPU'
 #endif
 
 #if LIBXC_ENABLED
@@ -502,6 +538,7 @@ subroutine bcast_variables
   call bcast_scalar_i(funct_x)
   call bcast_scalar_i(funct_c)
   call bcast_scalar_i(nchbmx)
+  call bcast_scalar_i(powr_maxit)
 
   !real*8
   call bcast_scalar_r8(dt)
@@ -520,6 +557,7 @@ subroutine bcast_variables
   call bcast_scalar_r8(tp)   
   call bcast_scalar_r8(homo)
   call bcast_scalar_r8(lumo)
+  call bcast_scalar_r8(powr_ftol)
 
   !logical
   call bcast_scalar_L(flgdyn) 
@@ -535,7 +573,11 @@ subroutine bcast_variables
   call bcast_scalar_L(read_homo_input)
   call bcast_scalar_L(read_lumo_input)
   call bcast_scalar_L(read_jidx_input)
-  call bcast_scalar_L(usegpu)
+  call bcast_scalar_L(disable_gpu_hminmax)
+  call bcast_scalar_L(disable_gpu_filter)
+  call bcast_scalar_L(disable_gpu_gam)
+  call bcast_scalar_L(disable_gpu_prop)
+  call bcast_scalar_L(use_host_curand)
   call bcast_scalar_L(block_gam_alg)
   call bcast_scalar_L(fuzzy_vk)
 

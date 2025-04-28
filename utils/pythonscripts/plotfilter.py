@@ -1,4 +1,4 @@
-# Import libraries
+# Python script for generating plot of Chebyshev filter and coefficient magnitudes
 import sys
 import os
 import string

@@ -177,6 +177,9 @@ subroutine make_ct_gpu
   deallocate(qri, stat=st); &
    if(st/=0) stop ' make_ct_gpu(): trouble deallocating qri '
 
+   call flush_vomake_device
+   call flush_propdtpt_device
+
 contains
 
   subroutine make_expvks
